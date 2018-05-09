@@ -1,0 +1,104 @@
+<template>
+
+	<div>
+
+		<app-header title="查询结果"></app-header>
+
+		<div class="cxjg-main" :style="pageh">
+
+			<div class="cxjg-item" v-for="item in list">
+				<router-link class="mint-cell" :to='item.path'>
+          <span class="mint-cell-mask"></span>
+					<div class="mint-cell-left"></div>
+					<div class="mint-cell-wrapper">
+						<div class="mint-cell-title">
+							<span class="mint-cell-text">{{item.ShortDescription}}</span>
+							<span class="mint-cell-label">服务单号&emsp;{{item.OrderNo}}</span>
+							<span class="mint-cell-label">提报时间&emsp;{{item.SubmitDate}}</span>
+							<span class="mint-cell-label">单据状态&emsp;{{item.OrderState}}</span>
+						</div>
+						<div class="mint-cell-value is-link"><span class=""></span></div>
+					</div>
+					<div class="mint-cell-right"></div> <i class="mint-cell-allow-right"></i>
+        </router-link>
+			</div>
+
+			<!--<div class="cxjg-item">
+				<a class="mint-cell"><span class="mint-cell-mask"></span>
+					<div class="mint-cell-left"></div>
+					<div class="mint-cell-wrapper">
+						<div class="mint-cell-title">
+							<span class="mint-cell-text">共享测试A</span>
+							<span class="mint-cell-label">服务单号&emsp;123456431234</span>
+							<span class="mint-cell-label">提报时间&emsp;2017-05-12</span>
+							<span class="mint-cell-label">单据状态&emsp;待提报</span>
+						</div>
+						<div class="mint-cell-value is-link"><span class=""></span></div>
+					</div>
+					<div class="mint-cell-right"></div> <i class="mint-cell-allow-right"></i></a>
+			</div>-->
+		</div>
+
+	</div>
+</template>
+
+<script>
+	import AppHeader from "@/components/HeaderComponent";
+	import { Cell } from 'mint-ui';
+	import { State } from "../utils/api.js";
+  import { httpGetMethod } from "../utils/api.js"; //添加公共组件
+  import { httpWebserviceFirst } from "../utils/api.js"; //添加公共组件
+
+	export default {
+		name: 'CxjgComponent',
+		data: function() {
+			return {
+				pageh: {
+					height: State().pageh
+				},
+        list:[]
+			}
+		},
+		components: {
+			AppHeader,
+			Cell
+		},
+		methods: {
+
+    },
+    mounted: function () {
+      let self = this;
+      let orderNo = this.$route.params.orderNo;
+      let shortdescription = this.$route.params.shortdescription;
+      let startDate = this.$route.params.startDate;
+      let endDate = this.$route.params.endDate;
+      httpWebserviceFirst("QueryServiceOrder",{
+        "key":"",
+        "token":'',
+        "userCode":'',
+        "orderNo":orderNo,
+        "shortdescription":shortdescription,
+        "startDate":startDate,
+        "endDate":endDate,
+        "pageIndex":'1'
+      },function(result){
+        console.log(result.OrderSeachResultList);
+        self.list = result.OrderSeachResultList;
+        result.OrderSeachResultList.forEach(function(item) {
+          item.path = "/fwxq/" + item.OrderNo;
+          self.list.push(item);
+        });
+      })
+    }
+	}
+</script>
+<style type="text/css">
+	.cxjg-main {
+		text-align: left;
+	}
+
+	.cxjg-main .mint-cell-wrapper {
+		padding: 10px;
+		background-size: 0px;
+	}
+</style>

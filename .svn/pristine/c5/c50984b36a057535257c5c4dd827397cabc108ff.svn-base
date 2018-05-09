@@ -1,0 +1,76 @@
+<template>
+
+  <div>
+    <mt-header class="header" fixed title="新建报销单">
+      <router-link to="/xjbxd" slot="left">
+        <mt-button icon="back">返回</mt-button>
+      </router-link>
+    </mt-header>
+
+    <div class="tjbxd-main">
+      <div class="xjbxd-jbxx">
+        发表照片
+      </div>
+      <div class="tjbxd-photo">
+
+      </div>
+      <div class="xjbxd-jbxx">
+        对方支付信息
+      </div>
+      <mt-field label="收款人：" placeholder="收款人姓名"></mt-field>
+      <mt-field label="银行：" placeholder="读取主数据开户行"></mt-field>
+      <mt-field label="银行账号：" placeholder="读取主数据银行信息"></mt-field>
+      <mt-field label="支付金额：" placeholder="自动合并"></mt-field>
+      <div class="bxxx-bottom">
+        <mt-button class="button" type="primary" size="large" @click="submit">提交</mt-button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+  export default {
+    name: 'TjbxdComponent',
+    data: function() {
+      return {
+
+      }
+    },
+    components: {
+
+    },
+    methods: {
+
+    },
+  }
+</script>
+<style type="text/css">
+  .header {
+    background-color: #3a71dc !important;
+  }
+
+  .clear {
+    clear: both;
+  }
+
+  .tjbxd-main {
+    font-family: "微软雅黑";
+    width: 100%;
+    text-align: left;
+  }
+
+  .tjbxd-photo {
+    width: 100%;
+    height: 50px;
+    background: white;
+  }
+
+  .bxxx-bottom {
+    width: 100%;
+    height: 41px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+  }
+
+</style>

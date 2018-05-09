@@ -1,0 +1,260 @@
+<template>
+
+  <div>
+    <app-header title="新建报销单"></app-header>
+
+    <div class="xjbxd-main">
+      <div class="xjbxd-jbxx">
+        <span>基本信息</span>
+      </div>
+      <mt-field label="单据类型：" placeholder="请输入单据类型" v-model="type"></mt-field>
+      <mt-field label="申请日期：" placeholder="请输入申请日期" v-model="type"></mt-field>
+      <mt-field label="报销人：" placeholder="请输入报销人" v-model="type"></mt-field>
+      <mt-field label="费用部门：" placeholder="请输入费用部门" v-model="type"></mt-field>
+      <mt-field label="成本中心：" placeholder="请输入成本中心" v-model="type"></mt-field>
+      <mt-field label="发票数量：" placeholder="只能填写大于0的数字" type="number"></mt-field>
+      <mt-field label="申请事由：" placeholder="请填写"></mt-field>
+      <div class="xjbxd-jbxx">
+        <span>发票信息</span>
+      </div>
+      <div class="xjbxd-fpxx" v-for="(item,index) in invoiceList">
+        <div class="xjbxd-fpxx-header">
+          <li>发票序号<span>{{index+1}}</span></li>
+          <li class="fa fa-trash-o" @click="deleteInvoice(index)"></li>
+          <div class="clear"></div>
+        </div>
+        <div class="xjbxd-fpxx-list">
+
+          <a class="mint-cell mint-field">
+            <div class="mint-cell-wrapper">
+              <div class="mint-cell-title">
+                <span class="mint-cell-text">费用项目：</span>
+              </div>
+              <div class="mint-cell-value" @click="expenseShow">
+                <input placeholder="请选择" type="text" class="mint-field-core" readonly="readonly">
+                <div class="mint-field-other" @click="expenseShow">
+                  <span class="fa fa-angle-down"></span>
+                </div>
+              </div>
+            </div>
+          </a>
+
+          <mt-field label="发票金额：" placeholder="只能填写大于0的数字" type="number"></mt-field>
+
+          <div class="xjbxd-item" @click="TimeOpen">
+            <mt-field readonly disabled label="发票日期：" placeholder="请选择" :value="pickerTime | formatDate">
+              <span class="xjbxd-date"></span>
+            </mt-field>
+          </div>
+        </div>
+        <div class="clear"></div>
+      </div>
+      <div class="xjbxd-zjfp" @click="addInvoice">
+        +增加发票
+      </div>
+      <div class="xjbxd-button">
+        <mt-button class="button" type="primary" size="large" @click="nextStep">下一步</mt-button>
+      </div>
+
+      <!--选择费用项目-->
+      <mt-popup v-model="expenseVisible" position="bottom" class="xjbxd-expense">
+        <div>
+          <mt-picker :slots="slots" @change="onValuesChangeExpense"></mt-picker>
+        </div>
+        <div>
+          <mt-button type="default" style="width: 50%;float: left;font-size: 14px">取消</mt-button>
+          <mt-button type="primary" style="width: 50%;float:left;font-size: 14px">确定</mt-button>
+        </div>
+
+      </mt-popup>
+      <mt-datetime-picker ref="pickerTime" type="date" :startDate="startTime" :endDate="endTime" v-model="pickerTime">
+      </mt-datetime-picker>
+    </div>
+  </div>
+</template>
+
+<script>
+  import AppHeader from "@/components/HeaderComponent";
+  import { DatetimePicker } from 'mint-ui';
+  import { Tool } from "../utils/tool.js";
+  export default {
+    name: 'XjbxdComponent',
+    data: function() {
+      return {
+        name:'费用项目：',
+        expenseVisible:false,
+        pickerTime:'',
+        startTime: new Date("2007-01-01"),
+        endTime: new Date(),
+        type:'',
+        slots: [
+          {
+            flex: 1,
+            values: [
+              "1",
+              "2"
+            ],
+            className: 'slot1',
+            textAlign: 'center'
+          }
+        ],
+        invoiceList:[
+          {
+            first:'',
+            second:'',
+            three:''
+          }
+        ]
+      }
+    },
+    components: {
+      AppHeader
+    },
+    methods: {
+      nextStep: function () {
+        this.$router.push('/tjbxd');
+      },
+      TimeOpen: function () {
+        this.$refs.pickerTime.open();
+      },
+      expenseShow: function () {
+        this.expenseVisible = true;
+      },
+      onValuesChangeExpense : function () {
+
+      },
+      addInvoice : function () {
+        this.invoiceList.push({
+          first:'1',
+          second:'1',
+          three:'1'
+        })
+      },
+      deleteInvoice : function (id) {
+        this.remove(this.invoiceList,this.invoiceList[id]);
+        console.log(this.invoiceList)
+      },
+      remove: function (arr,item) {
+        if(arr.length){
+          var index = arr.indexOf(item);
+          if(index>-1){
+            return arr.splice(index,1)
+          }
+        }
+      }
+    },
+    filters: {
+      formatDate(time) {
+        let date = new Date(time);
+        return Tool.formate(date, 'yyyy-MM-dd')
+      }
+    }
+  }
+</script>
+<style type="text/css">
+
+  .xjbxd-button .button{
+    background-color: #3a71dc !important;
+  }
+
+  .clear {
+    clear: both;
+  }
+
+  .xjbxd-main {
+    font-family: "微软雅黑";
+    width: 100%;
+    text-align: left;
+    font-size: 14px;
+    margin-bottom: 40px;
+  }
+
+  .xjbxd-main .mint-cell-wrapper {
+    font-size: 14px;
+  }
+
+  .xjbxd-jbxx {
+    height: 40px;
+    line-height: 40px;
+    color: #8c8c8c;
+  }
+
+  .xjbxd-jbxx span{
+    display: inline-block;
+    margin-left: 10px;
+  }
+
+  .xjbxd-fpxx{
+    background: white;
+  }
+
+  .xjbxd-fpxx-header{
+    width: 100%;
+    height: 48px;
+    background: white;
+    line-height: 48px;
+  }
+
+  .xjbxd-fpxx-header li:nth-child(1){
+    float: left;
+    margin-left: 10px;
+  }
+
+  .xjbxd-fpxx-header li:nth-child(2){
+    float: right;
+    margin-right: 15px;
+    line-height: 48px;
+  }
+
+  .xjbxd-fpxx-list{
+    width: 90%;
+    float: right;
+  }
+
+  .xjbxd-zjfp{
+    width: 100%;
+    height: 48px;
+    line-height: 48px;
+    text-align: center;
+    background: white;
+    font-size: 16px;
+    color: #6f97e5;
+  }
+
+  .xjbxd-date{
+    background: url(../../static/time.png) no-repeat center;
+    background-size: contain;
+    display: block;
+    width: 15px;
+    height: 15px;
+  }
+
+  .xjbxd-item .mint-cell-wrapper {
+    background-size: 0;
+    text-align: left;
+  }
+
+  input:disabled{
+    background:#fff;
+  }
+
+  .xjbxd-fpxx .mint-cell-wrapper {
+    padding: 0 15px;
+  }
+
+  .xjbxd-button {
+    width: 100%;
+    height: 40px;
+    position: fixed;
+    left: 0;
+    bottom: 0;
+  }
+
+  .xjbxd-button .mint-button {
+    border-radius: 0;
+  }
+
+  .xjbxd-expense {
+    width: 100%;
+  }
+</style>

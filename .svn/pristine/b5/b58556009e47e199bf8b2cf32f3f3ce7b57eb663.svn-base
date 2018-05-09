@@ -1,0 +1,238 @@
+<template>
+
+	<div>
+		<app-header title="建设中">
+			<!--<div slot='right' @click="handleClose">
+				<span class="fa fa-camera-retro fa-lg"></span>
+				<label for="">111</label>
+			</div>-->
+		</app-header>
+		<div class="jqqd-main">
+
+			<div class="jqqd-content"><img class="jqqd-img" src="../../static/jqqd.png"></div>
+
+		</div>
+
+	</div>
+</template>
+
+<script>
+	import AppHeader from "@/components/HeaderComponent";
+	import { State } from "../utils/api.js";
+  import { httpGetTjxx } from "../utils/api.js"; //添加公共组件
+	export default {
+		name: 'JqqdComponent',
+		data: function() {
+			return {
+				pageh: {
+					height:State().pageh
+				}
+			}
+		},
+		components: {
+			AppHeader
+		},
+		methods: {
+			handleClose: function() {
+				alert("可复用的头部组件");
+				this.test(0)
+			},
+			test: function(test) {
+				let self = this;
+
+				httpGetMethod("hrs-ess/app/getCommonSenseList.action?", {
+					RowNum: test,
+					PageSize: 2
+				}, function(result) {
+          console.log(result)
+					self.list = result.data;
+
+				})
+			}
+		},
+		mounted: function() {
+			console.log("页面启动");
+      var id = '1';                   // 0  保存 1 提交
+      var billCode ='系统自动生成'; //报销单编号
+      var creater ='刘鹏';          //创建人
+      var remark = '申请事由222';      //申请事由
+      var billNumber='1';           //票据张数
+      var applyEmpId='00617301';    //申请人id
+      var applyEmpName='刘鹏';      //申请人名称
+      var applyOrgId = '20021007' ; //员工的组织ID
+      var applyOrgCode ='20021007';  //员工的组织code
+      var applyorgsfname= '报销核算运营部';// 员工的组织名称
+      var applyDeptOrgCode='20021007' ;   //人员所属部门编码
+      var applyDeptOrgSfname='报销核算运营部' ;//人员所属部门名称
+
+      var apprOrgId = '20021007' ;   //审批组织机构ID
+      var apprOrgCode = '20021007' ; //审批组织机构编码
+      var approrgsfname ='报销核算运营部' ; //审批组织机构名称
+      var currcyId = 'RMB' ;
+      var currcyCode = 'RMB' ;
+      var currcyName = '人民币' ;
+      var rate = '0.00' ; //汇率
+      var costCentCode = '8SO1303001' ; //成本中心编码
+      var compCode = '1180' ;           //公司编码
+      var bcurrcyId = 'RMB' ;           //人民币
+      var bcurrcyAmount = '100.00';     //本位币金额
+      var bcurrcyCode = 'RMB' ;         //本位币币种
+      var billAmount= '100.00';         //报销金额
+      var accoObjCode =''; // 审批维度
+      var accoObjName =''; // 审批维度
+      var accoObjValue =''; // 审批维度
+      var accoObjValueDesc =''; //审批维度
+
+      var expTypeCode1 =''; // 一级费用类型编码
+      var expTypeName1 =''; // 一级费用类型类型
+      var expTypeCode2 =''; // 二级费用类型编码
+      var expTypeName2 =''; // 二级费用类型名称
+
+      var rmaOtherBillExpensesJson = "[{'assists':[{'assiObjCode':'001','assiObjName':'成本中心','assiObjValue':'8SO1303001','assiObjValueDesc':'报销核算运营部','del':'0'}],'bcurrcyAmount':'100.00','rate':'1.00000','billAmount':'100.00','currentPayAmount':0,'isDeduction':'0','expTypeName':'近途交通费','expTypeCode':'001001002','expTypeFouth':'6055C84E79B711E7A88F00155D6D1F01','expTypeFouthName':'退改签车票','invoiceCurrcyName':'人民币','invoiceCurrcyId':'RMB','happenDate':'','taxtpName':'','taxtpCode':null,'suppName':'','suppCode':null,'remark':'','costObjCode':null,'costObjName':'','costObjValue':'','costObjDesc':'','taxtpAmount':'0.00','ftaxtAmount':'0.00','invoiceCode':'','expControlType':'','suppFlag':'','isSingle':'1','bankAccount':'','bankKey':'','orderNo':'1','invoiceMark':'','originalTaxAmount':'0.00','expenseOnceSupp':{}}]";
+      var rmaOtherBillPayOffsJson ="[]";
+      var rmaOtherBillApplyJson ="";
+      var rmaOtherBillLoadJson ="[]";
+      var pubApplyNos ="";
+      this.$http.post('http://10.246.137.221/fss/otherBillPubAction_addRmaOtherBill.action?', {
+        'saveOrSubmit':id,
+        'rmaOtherBill.payModeName':'银企直连',
+        'rmaOtherBill.payModeCode':'003',
+        'rmaOtherBill.billCode':billCode,
+        'rmaOtherBill.creater':creater,
+        'rmaOtherBill.remark':remark,
+        'rmaOtherBill.billNumber':billNumber,
+        'rmaOtherBill.applyEmpId':applyEmpId,
+        'rmaOtherBill.applyEmpName':applyEmpName,
+        'rmaOtherBill.applyOrgId':applyOrgId,
+        'rmaOtherBill.applyOrgCode':applyOrgCode,
+        'rmaOtherBill.applyorgsfname':applyorgsfname,
+        'rmaOtherBill.applyDeptOrgCode':applyDeptOrgCode,
+        'rmaOtherBill.applyDeptOrgSfname':applyDeptOrgSfname,
+
+
+        'rmaOtherBill.apprOrgId':apprOrgId,
+        'rmaOtherBill.apprOrgCode':apprOrgCode,
+        'rmaOtherBill.approrgsfname':approrgsfname,
+        'rmaOtherBill.forReimbursementName':applyEmpName,
+        'rmaOtherBill.forReimbursementCode':applyEmpId,
+        'rmaOtherBill.forReimbursementOrgName':approrgsfname,
+        'rmaOtherBill.forReimbursementOrgCode':apprOrgId,
+        'rmaOtherBill.currcyId':currcyId,
+        'rmaOtherBill.currcyName':currcyName,
+        'rmaOtherBill.currcyCode':currcyCode,
+        'rmaOtherBill.rate':rate,
+
+
+        'rmaOtherBill.costCentCode':costCentCode,
+        'rmaOtherBill.compCode':compCode,
+        'rmaOtherBill.bcurrcyId':bcurrcyId,
+        'rmaOtherBill.bcurrcyAmount':bcurrcyAmount,
+        'rmaOtherBill.bcurrcyCode':bcurrcyCode,
+        'rmaOtherBill.billAmount':billAmount,
+        'rmaOtherBill.accoObjCode':accoObjCode,
+        'rmaOtherBill.accoObjName':accoObjName,
+        'rmaOtherBill.accoObjValue':accoObjValue,
+        'rmaOtherBill.accoObjValueDesc':accoObjValueDesc,
+
+
+        'rmaOtherBill.expTypeCode1':expTypeCode1,
+        'rmaOtherBill.expTypeName1':expTypeName1,
+        'rmaOtherBill.expTypeCode2':expTypeCode2,
+        'rmaOtherBill.expTypeName2':expTypeName2,
+        'rmaOtherBillExpensesJson':rmaOtherBillExpensesJson,
+        'rmaOtherBillPayOffsJson':rmaOtherBillPayOffsJson,
+        'rmaOtherBillApplyJson':rmaOtherBillApplyJson,
+        'rmaOtherBillLoadJson':rmaOtherBillLoadJson,
+        'rmaOtherBill.pubPayApplyNos':pubApplyNos
+      }, {
+        headers: {
+          "dataType": "json",
+        },
+        emulateJSON: true
+      }).then(function(response) {
+        console.log(response);
+
+      }, function(response) {
+        console.log(response)
+      });
+
+
+      httpGetTjxx("fss/otherBillPubAction_addRmaOtherBill.action?", {
+        'saveOrSubmit':id,
+        'rmaOtherBill.payModeName':'银企直连',
+        'rmaOtherBill.payModeCode':'003',
+        'rmaOtherBill.billCode':billCode,
+        'rmaOtherBill.creater':creater,
+        'rmaOtherBill.remark':remark,
+        'rmaOtherBill.billNumber':billNumber,
+        'rmaOtherBill.applyEmpId':applyEmpId,
+        'rmaOtherBill.applyEmpName':applyEmpName,
+        'rmaOtherBill.applyOrgId':applyOrgId,
+        'rmaOtherBill.applyOrgCode':applyOrgCode,
+        'rmaOtherBill.applyorgsfname':applyorgsfname,
+        'rmaOtherBill.applyDeptOrgCode':applyDeptOrgCode,
+        'rmaOtherBill.applyDeptOrgSfname':applyDeptOrgSfname,
+
+
+        'rmaOtherBill.apprOrgId':apprOrgId,
+        'rmaOtherBill.apprOrgCode':apprOrgCode,
+        'rmaOtherBill.approrgsfname':approrgsfname,
+        'rmaOtherBill.forReimbursementName':applyEmpName,
+        'rmaOtherBill.forReimbursementCode':applyEmpId,
+        'rmaOtherBill.forReimbursementOrgName':approrgsfname,
+        'rmaOtherBill.forReimbursementOrgCode':apprOrgId,
+        'rmaOtherBill.currcyId':currcyId,
+        'rmaOtherBill.currcyName':currcyName,
+        'rmaOtherBill.currcyCode':currcyCode,
+        'rmaOtherBill.rate':rate,
+
+
+        'rmaOtherBill.costCentCode':costCentCode,
+        'rmaOtherBill.compCode':compCode,
+        'rmaOtherBill.bcurrcyId':bcurrcyId,
+        'rmaOtherBill.bcurrcyAmount':bcurrcyAmount,
+        'rmaOtherBill.bcurrcyCode':bcurrcyCode,
+        'rmaOtherBill.billAmount':billAmount,
+        'rmaOtherBill.accoObjCode':accoObjCode,
+        'rmaOtherBill.accoObjName':accoObjName,
+        'rmaOtherBill.accoObjValue':accoObjValue,
+        'rmaOtherBill.accoObjValueDesc':accoObjValueDesc,
+
+
+        'rmaOtherBill.expTypeCode1':expTypeCode1,
+        'rmaOtherBill.expTypeName1':expTypeName1,
+        'rmaOtherBill.expTypeCode2':expTypeCode2,
+        'rmaOtherBill.expTypeName2':expTypeName2,
+        'rmaOtherBillExpensesJson':rmaOtherBillExpensesJson,
+        'rmaOtherBillPayOffsJson':rmaOtherBillPayOffsJson,
+        'rmaOtherBillApplyJson':rmaOtherBillApplyJson,
+        'rmaOtherBillLoadJson':rmaOtherBillLoadJson,
+        'rmaOtherBill.pubPayApplyNos':pubApplyNos
+      }, function(result) {
+        console.log(result);
+      })
+
+		}
+	}
+</script>
+<style type="text/css">
+	.jqqd-main {
+		background: #f5f5f5;
+		position: absolute;
+		top: 40px;
+		bottom: 0;
+		left: 0;
+		right: 0;
+/*		display: flex;
+*/	}
+
+	.jqqd-content {
+		margin: 0 auto;
+		padding-top: 160px;
+		width: 230px;
+		height: 240px;
+	}
+	.jqqd-content .jqqd-img {
+		width: 100%;
+	}
+</style>

@@ -1,0 +1,419 @@
+<template>
+
+	<div>
+
+		<app-header title="服务详情"></app-header>
+
+		<div class="fwxq-main" :style="pageh">
+			<div class="approve-table" v-for="table in tables">
+				<div :class="table.expend?(table.tr && table.tr.length>0?'header':'header-unBottonLine'):'header-unBottonLine'" @click="toggleGroup(table)">
+					<span>{{table.title}}</span>
+					<i class="fa float-right" :class="table.expend?'fa-caret-down':'fa-caret-up'"></i>
+				</div>
+				<div class="body" >
+					<!--<div v-if='table.columns=="2"' class="approve-table-two" v-show="table.expend">-->
+						<!--<div :class="tri==table.tr.length-1?'row tr-last':'row tr'" v-for="(tr,tri) in table.tr">-->
+							<!--<div :class="index==0?'col-33 first':'col-67 notFirst'" v-for="(td,index ) in tr">-->
+								<!--<span>{{td}}</span>-->
+							<!--</div>-->
+						<!--</div>-->
+					<!--</div>-->
+
+          <!--文本描述-->
+					<div v-if='table.columns=="1"' class="approve-table-two" v-show="table.expend">
+						<div :class="tri==table.tr.length-1?'row tr-last':'row tr'" v-for="(tr,tri) in table.tr">
+							<!--<div class="row" >-->
+								<!--<a v-bind:href='tr.value'>{{tr.title}}</a>-->
+							<!--</div>-->
+              <span>{{tr}}</span>
+						</div>
+					</div>
+
+          <!--附件信息-->
+          <div v-if='table.columns=="5"' class="approve-table-two approve-table-five" v-show="table.expend">
+            <div :class="tri==table.tr.length-1?'row tr-last':'row tr'" v-for="(tr,tri) in table.tr">
+              <div class="col-51">
+                <span>{{tr.SortIndex}}</span>
+              </div>
+              <div class="col-52">
+                <span>{{tr.FileName}}</span>
+              </div>
+              <div class="col-53">
+                <span>{{tr.CreateBy}}</span>
+              </div>
+              <div class="col-52">
+                <span>{{tr.FileUploadTime}}</span>
+              </div>
+              <div class="col-51">
+                <span v-if="tri==0">查看</span>
+                <span v-if="tri!=0" @click="showPhoto(tr.FileDownLoadPath)">查看</span>
+                <!--<img v-bind:src='tr.FileDownLoadPath' alt="" style="width: 100px;height: 100px">-->
+              </div>
+            </div>
+          </div>
+
+          <!--服务跟踪-->
+          <div v-if='table.columns=="3"' class="approve-table-two approve-table-five" v-show="table.expend">
+            <div :class="tri==table.tr.length-1?'row tr-last':'row tr'" v-for="(tr,tri) in table.tr">
+              <div class="col-01">
+                <span>{{tr.TackTime}}</span>
+              </div>
+              <div class="col-02">
+                <span>{{tr.TackInfo}}</span>
+              </div>
+              <div class="col-03">
+                <span>{{tr.OperateUser}}</span>
+              </div>
+            </div>
+          </div>
+
+				</div>
+			</div>
+
+      <mt-popup class="photoVisible"
+        v-model="popupVisible"
+
+        >
+        <img v-bind:src="file" alt="" @click="notVisible">
+      </mt-popup>
+
+		</div>
+
+	</div>
+</template>
+
+<script>
+	import AppHeader from "@/components/HeaderComponent";
+
+	import { State } from "../utils/api.js";
+  import { httpWebservice } from "../utils/api.js"; //添加公共组件
+  import { Tool } from "../utils/tool.js";
+
+	export default {
+		name: 'FwxqComponent',
+		data: function() {
+			return {
+				pageh: {
+					height: State().pageh
+				},
+        popupVisible:false,
+        file:'',
+        attachment:{
+          "SortIndex": "序号",
+          "FileName": "上传文件名称",
+          "CreateBy": "创建人",
+          "FileUploadTime": "创建日期",
+          "FileDownLoadPath": "下载"
+        },
+        service:{
+				  "TackTime":"处理时间",
+          "TackInfo":"处理信息",
+          "OperateUser":"操作人"
+        },
+				tables: [{
+					"title": "文本描述",
+					"editfield": "false",
+					"columns": "1",
+					"expend": "true",
+					"id": "1f88708e-4693-4670-93a9-40e56a4ad780",
+					"tr": [
+
+					]
+				}, {
+					"title": "附件信息",
+					"editfield": "false",
+					"columns": "5",
+					"expend": "true",
+					"id": "9d7d9318-07de-4db8-89e8-947f92fa4c4a",
+					"tr": [
+
+					]
+				}, {
+					"title": "服务跟踪",
+					"editfield": "false",
+					"columns": "3",
+					"expend": "false",
+					"id": "e661b299-b37a-4695-ae87-a0ae2f0c263f",
+					"tr": [
+
+          ]
+				}
+				]
+			}
+		},
+		components: {
+			AppHeader
+		},
+		methods: {
+			toggleGroup: function(item) {
+				item.expend = !item.expend;
+
+			},
+      showPhoto : function (file) {
+			  let form = file.substring(file.length - 3);
+        if(form == "png" || "jpg" || "gif") {
+          this.popupVisible = true;
+          this.file = file;
+        }
+        else {
+          Tool.alert("暂不支持查看此格式的文件");
+        }
+      },
+      notVisible: function () {
+        this.popupVisible = false;
+      }
+		},
+    mounted: function () {
+      let self = this;
+      let orderNo = this.$route.params.orderNo;
+      let userCode = this.$route.params.userCode;
+
+      httpWebservice("ServiceOrderDetail",{
+        "orderNo":orderNo,
+        "userCode":userCode
+      },false,function(result){
+
+        //        获取文本描述
+        self.tables[0].tr = result.TextDescriptionList;
+
+        //        获取附件信息
+        if(result.FileList != '') {
+          result.FileList.unshift(self.attachment);
+          self.tables[1].tr = result.FileList;
+        }
+
+        //        获取服务跟踪
+        if(result.OrderTrackModelList != '') {
+          result.OrderTrackModelList.unshift(self.service);
+          self.tables[2].tr = result.OrderTrackModelList;
+        }
+      })
+
+
+    }
+	}
+</script>
+<style type="text/css">
+	.fwxq-main {
+		text-align: left;
+	}
+
+	.approve-table {
+		background-color: white;
+		margin-top: 10px;
+		border-top: solid 1px #d8d8d8;
+	}
+
+	.approve-table .body a {
+		color: #2982d5;
+		text-decoration: none;
+	}
+
+	.approve-table .header {
+		height: 44px;
+		line-height: 44px;
+		margin-left: 10px;
+		margin-right: 10px;
+		color: #2982d5;
+		font-size: 16px;
+	    background-color: #fff !important;
+		border-bottom: solid 1px #d8d8d8;
+	}
+
+	.approve-table .header-unBottonLine {
+		height: 44px;
+		line-height: 44px;
+		margin-left: 10px;
+		margin-right: 10px;
+		color: #2982d5;
+		font-size: 16px;
+	}
+
+	.approve-table .body {
+		border-bottom: solid 1px #d8d8d8;
+		padding-left: 10px;
+		padding-right: 10px;
+	}
+	/*左右两列样式*/
+
+	.approve-table-two .tr {
+		/*margin-top: 7px;*/
+		/*margin-bottom: 7px;*/
+		padding: 7px 0;
+		border-bottom: 1px dotted #D8D8D8;
+	}
+
+	.approve-table-two .tr-last {
+			padding: 7px 0;
+	}
+
+	.approve-table-two .tr .first {
+		color: #777;
+	}
+
+	.approve-table-two .tr .notFirst {
+		color: #000;
+	}
+
+	.approve-table-two .tr-last .first {
+		color: #777;
+	}
+
+	.approve-table-two .tr-last .notFirst {
+		color: #000;
+	}
+	/*多列时以table方式展示*/
+
+	.approve-table-multiple {
+		width: 100%;
+		margin-top: 7px;
+		margin-bottom: 7px;
+	}
+  .approve-table-five{
+    text-align: center;
+  }
+
+  .approve-table-five>div:nth-child(1) {
+    font-weight: bold;
+  }
+
+  .approve-table-five>div:nth-child(odd) {
+    background: #f7f7f7;
+  }
+
+	.approve-table-multiple .th {
+		color: #777;
+		border: 1px solid #ccc;
+	}
+
+	.approve-table-multiple .tr {
+		color: #000;
+		border: 1px solid #ccc;
+	}
+
+	.approve-table-multiple .td {
+		padding: 5px;
+		border: 1px solid #ccc;
+	}
+
+	.approve-table-multiple .td .cell-width {
+		width: 150px;
+	}
+
+	.approve-table-move {
+		overflow: hidden;
+	}
+
+	.move-table {
+		float: left;
+	}
+
+	.approve-table-move .tr .td {
+		height: 51px;
+		vertical-align: middle;
+	}
+
+	.move-table-right {
+		margin-top: 0;
+	}
+
+	.approve-detail-input[type='text'] {
+		width: 100%;
+		padding: 3px;
+		border: 1px solid #d8d8d8;
+		-webkit-appearance: none;
+		outline: none;
+	}
+	.float-right{
+		float: right;
+		height: 100%;
+		display: flex;
+		align-items: center;
+    line-height: 45px;
+	}
+	.row {
+		display: flex;
+		padding: 5px;
+		width: 100%;
+		align-items: center;
+
+	}
+
+	.col-33 {
+		-webkit-box-flex: 0;
+		-webkit-flex: 0 0 33.3333%;
+		-moz-box-flex: 0;
+		-moz-flex: 0 0 33.3333%;
+		-ms-flex: 0 0 33.3333%;
+		flex: 0 0 33.3333%;
+		max-width: 33.3333%;
+	}
+
+	.col-67 {
+		-webkit-box-flex: 0;
+		-webkit-flex: 0 0 66.6666%;
+		-moz-box-flex: 0;
+		-moz-flex: 0 0 66.6666%;
+		-ms-flex: 0 0 66.6666%;
+		flex: 0 0 66.6666%;
+		max-width: 66.6666%;
+	}
+
+  .col-51 {
+    -webkit-box-flex: 0;
+    -webkit-flex: 0 0 10%;
+    -moz-box-flex: 0;
+    -moz-flex: 0 0 10%;
+    -ms-flex: 0 0 10%;
+    flex: 0 0 10%;
+    max-width: 10%;
+  }
+  .col-52,.col-01 {
+    -webkit-box-flex: 0;
+    -webkit-flex: 0 0 30%;
+    -moz-box-flex: 0;
+    -moz-flex: 0 0 30%;
+    -ms-flex: 0 0 30%;
+    flex: 0 0 30%;
+    max-width: 30%;
+  }
+
+  .col-53,.col-03 {
+    -webkit-box-flex: 0;
+    -webkit-flex: 0 0 20%;
+    -moz-box-flex: 0;
+    -moz-flex: 0 0 20%;
+    -ms-flex: 0 0 20%;
+    flex: 0 0 20%;
+    max-width: 20%;
+  }
+
+  .col-65 {
+    -webkit-box-flex: 0;
+    -webkit-flex: 0 0 20%;
+    -moz-box-flex: 0;
+    -moz-flex: 0 0 20%;
+    -ms-flex: 0 0 20%;
+    flex: 0 0 20%;
+    max-width: 20%;
+  }
+
+  .col-02{
+    -webkit-box-flex: 0;
+    -webkit-flex: 0 0 50%;
+    -moz-box-flex: 0;
+    -moz-flex: 0 0 50%;
+    -ms-flex: 0 0 50%;
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+	.body-nobottom{
+		/*border: none;*/
+	}
+
+  .photoVisible img {
+    max-width: 100%;
+    max-height: 80%;
+  }
+
+</style>

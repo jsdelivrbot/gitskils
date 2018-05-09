@@ -1,0 +1,78 @@
+<template>
+	<div>
+		<app-header title="我要咨询" ></app-header>
+
+		<div class="wyzx-main">
+
+		<div class="typetitle">提问类型</div>
+		<div class="typelist"><span v-model="qstype">请选择提问类型</span><span class="fa fa-angle-down"></span></div>
+		<div class="contstitle">提问内容</div>
+		<div class="contswrap">
+			<textarea class="contstext" placeholder="请输入内容" rows="4"></textarea>
+		</div>
+		<div class="btnCont">
+			<mt-button type="primary" size="large">提交</mt-button>
+		</div>
+		<div class="btnCont">
+			<mt-button type="primary" size="large">查看所提问题</mt-button>
+		</div>
+
+		</div>
+	</div>
+</template>
+
+<script>
+	import AppHeader from "@/components/HeaderComponent";
+	export default {
+		name: 'ZcznComponent',
+		data: function() {
+			return {
+        qstype: "",
+        textconts:""
+			}
+		},
+		components: {
+			AppHeader
+		},
+		methods: {
+
+		},
+	}
+</script>
+<style type="text/css">
+  body,a,img,span {
+    margin: 0;
+    padding: 0;
+  }
+  body{
+    background: #fff;
+  }
+	.wyzx-main{
+    font-size: 14px;
+    padding: 0 15px;
+	}
+	.typetitle,.contstitle{
+	  line-height: 36px;
+	}
+	.contswrap{
+	  padding-right: 20px;
+	}
+	.typelist,.contstext{
+	  padding: 8px 10px;
+	  text-align: left;
+    border: 1px solid #ead8a6;
+    border-radius: 4px;
+    outline: none;
+    display: block;
+    width: 100%;
+    resize: none;
+	}
+	.fa-angle-down {
+	  float: right;
+	  font-size: 20px;
+	}
+	.btnCont{
+  	margin-top: 20px;
+  	padding: 0 18px;
+  }
+</style>

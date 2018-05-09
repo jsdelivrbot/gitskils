@@ -1,0 +1,340 @@
+<template>
+
+	<div>
+
+		<app-header title="服务详情"></app-header>
+
+		<div class="fwxq-main" :style="pageh">
+
+			<div class="approve-table" v-for="table in tables">
+				<div :class="table.expend?(table.tr && table.tr.length>0?'header':'header-unBottonLine'):'header-unBottonLine'" @click="toggleGroup(table)">
+					<span>{{table.title}}</span>
+					<i class="fa float-right" :class="table.expend?'fa-caret-down':'fa-caret-up'"></i>
+				</div>
+				<div class="body" >
+					<div v-if='table.columns=="2"' class="approve-table-two" v-show="table.expend">
+						<div :class="tri==table.tr.length-1?'row tr-last':'row tr'" v-for="(tr,tri) in table.tr">
+							<div :class="index==0?'col-33 first':'col-67 notFirst'" v-for="(td,index ) in tr">
+								<span>{{td}}</span>
+							</div>
+						</div>
+					</div>
+					
+					<div v-if='table.columns=="1"' class="approve-table-two" v-show="table.expend">
+						<div :class="tri==table.tr.length-1?'row tr-last':'row tr'" v-for="(tr,tri) in table.tr">
+							<div class="row" >
+								<a v-bind:href='tr.value'>{{tr.title}}</a>
+							</div>
+						</div>
+					</div>
+					
+
+				</div>
+			</div>
+
+		</div>
+
+	</div>
+</template>
+
+<script>
+	import AppHeader from "@/components/HeaderComponent";
+
+	import { State } from "../utils/api.js";
+
+	export default {
+		name: 'FwxqComponent',
+		data: function() {
+			return {
+				pageh: {
+					height: State().pageh
+				},
+				tables: [{
+					"title": "基本信息",
+					"editfield": "false",
+					"columns": "2",
+					"expend": "true",
+					"id": "1f88708e-4693-4670-93a9-40e56a4ad780",
+					"tr": [
+						[
+							"单据类型",
+							"005"
+						],
+						[
+							"申请日期",
+							"20170617"
+						],
+						[
+							"申请人",
+							"陈晨"
+						],
+						[
+							"费用部门",
+							"机关后勤"
+						],
+						[
+							"申请事由",
+							"公务出差0617-陈晨"
+						],
+						[
+							"审批维度",
+							""
+						],
+						[
+							"紧急流程", []
+						]
+					]
+				}, {
+					"title": "业务信息",
+					"editfield": "false",
+					"columns": "2",
+					"expend": "true",
+					"id": "9d7d9318-07de-4db8-89e8-947f92fa4c4a",
+					"tr": [
+						[
+							"开始日期",
+							"20170617"
+						],
+						[
+							"结束日期",
+							"20170622"
+						],
+						[
+							"预计费用",
+							"1000.00"
+						],
+						[
+							"出差目的",
+							"公务出差"
+						],
+						[
+							"出差区域",
+							"市外"
+						],
+						[
+							"出差城市",
+							"成都"
+						]
+					]
+				}, {
+					"title": "差旅信息-陈晨",
+					"editfield": "false",
+					"columns": "2",
+					"expend": "false",
+					"id": "e661b299-b37a-4695-ae87-a0ae2f0c263f",
+					"tr": []
+				}, {
+					"title": "费用明细-差旅费",
+					"editfield": "false",
+					"columns": "2",
+					"expend": "false",
+					"id": "79cba53d-991e-4b15-bd63-ca782eec9bff",
+					"tr": [
+						[
+							"四级费用项目",
+							""
+						],
+						[
+							"费用金额",
+							"1000.0"
+						]
+					]
+				}, {
+					"title": "附件信息（0个）",
+					"editfield": "false",
+					"columns": "1",
+					"expend": "false",
+					"id": "27f7e8db-5206-4c0c-93d7-3f6fae594681",
+					"tr":[
+						{
+									"title": "1.jpg",
+									"name": "PDF",
+									"value": "http://10.246.101.129/WebComponent_SIM/SP/1.jpg",
+									"required": "false",
+									"alt": "DG15UHO9M9EB8EDGTR4Z",
+									"checked": "false",
+									"type": "file",
+									"maxlength": "0",
+									"minlength": "0",
+									"regex": "false",
+									"message": "",
+									"submitflag": "",
+									"closevalue": ""
+								}
+					]
+				}, {
+					"title": "影像信息（0个）",
+					"editfield": "false",
+					"columns": "2",
+					"expend": "false",
+					"id": "a7d289db-8bfc-409d-8c51-fe092ef081bd"
+				}]
+			}
+		},
+		components: {
+			AppHeader
+		},
+		methods: {
+			toggleGroup: function(item) {
+				item.expend = !item.expend;
+
+			}
+		}
+	}
+</script>
+<style type="text/css">
+	.fwxq-main {
+		text-align: left;
+	}
+	
+	.approve-table {
+		background-color: white;
+		margin-top: 10px;
+		border-top: solid 1px #d8d8d8;
+	}
+	
+	.approve-table .body a {
+		color: #2982d5;
+		text-decoration: none;
+	}
+	
+	.approve-table .header {
+		height: 44px;
+		line-height: 44px;
+		margin-left: 10px;
+		margin-right: 10px;
+		color: #2982d5;
+		font-size: 16px;
+		border-bottom: solid 1px #d8d8d8;
+	}
+	
+	.approve-table .header-unBottonLine {
+		height: 44px;
+		line-height: 44px;
+		margin-left: 10px;
+		margin-right: 10px;
+		color: #2982d5;
+		font-size: 16px;
+	}
+	
+	.approve-table .body {
+		border-bottom: solid 1px #d8d8d8;
+		padding-left: 10px;
+		padding-right: 10px;
+	}
+	/*左右两列样式*/
+	
+	.approve-table-two .tr {
+		/*margin-top: 7px;*/
+		/*margin-bottom: 7px;*/
+		padding: 7px 0;
+		border-bottom: 1px dotted #D8D8D8;
+	}
+	
+	.approve-table-two .tr-last {
+			padding: 7px 0;
+	}
+	
+	.approve-table-two .tr .first {
+		color: #777;
+	}
+	
+	.approve-table-two .tr .notFirst {
+		color: #000;
+	}
+	
+	.approve-table-two .tr-last .first {
+		color: #777;
+	}
+	
+	.aapprove-table-two .tr-last .notFirst {
+		color: #000;
+	}
+	/*多列时以table方式展示*/
+	
+	.approve-table-multiple {
+		width: 100%;
+		margin-top: 7px;
+		margin-bottom: 7px;
+	}
+	
+	.approve-table-multiple .th {
+		color: #777;
+		border: 1px solid #ccc;
+	}
+	
+	.approve-table-multiple .tr {
+		color: #000;
+		border: 1px solid #ccc;
+	}
+	
+	.approve-table-multiple .td {
+		padding: 5px;
+		border: 1px solid #ccc;
+	}
+	
+	.approve-table-multiple .td .cell-width {
+		width: 150px;
+	}
+	
+	.approve-table-move {
+		overflow: hidden;
+	}
+	
+	.move-table {
+		float: left;
+	}
+	
+	.approve-table-move .tr .td {
+		height: 51px;
+		vertical-align: middle;
+	}
+	
+	.move-table-right {
+		margin-top: 0;
+	}
+	
+	.approve-detail-input[type='text'] {
+		width: 100%;
+		padding: 3px;
+		border: 1px solid #d8d8d8;
+		-webkit-appearance: none;
+		outline: none;
+	}
+	.float-right{
+		float: right;
+		height: 100%;
+		display: flex;
+		align-items: center;
+	}
+	.row {
+		display: flex;
+		padding: 5px;
+		width: 100%;
+		align-items: center;
+		
+	}
+	
+	.col-33 {
+		-webkit-box-flex: 0;
+		-webkit-flex: 0 0 33.3333%;
+		-moz-box-flex: 0;
+		-moz-flex: 0 0 33.3333%;
+		-ms-flex: 0 0 33.3333%;
+		flex: 0 0 33.3333%;
+		max-width: 33.3333%;
+	}
+	
+	.col-67 {
+		-webkit-box-flex: 0;
+		-webkit-flex: 0 0 66.6666%;
+		-moz-box-flex: 0;
+		-moz-flex: 0 0 66.6666%;
+		-ms-flex: 0 0 66.6666%;
+		flex: 0 0 66.6666%;
+		max-width: 66.6666%;
+	}
+	.body-nobottom{
+		/*border: none;*/
+	}
+</style>

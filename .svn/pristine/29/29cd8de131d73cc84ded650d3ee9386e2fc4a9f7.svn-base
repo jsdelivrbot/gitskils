@@ -1,0 +1,242 @@
+<template>
+	<div>
+		<app-header title="我要咨询" ></app-header>
+
+		<div class="wyzx-main" :style="pageh">
+
+			<div class="titles">提问类型</div>
+			<div class="mint-cell-value checkqstype" @click="listShow">
+				<input placeholder="请选择提问类型" type="text" class="mint-field-core" readonly="readonly" v-model="qstype">
+				<div class="mint-field-other">
+					<span class="fa fa-angle-down"></span>
+				</div>
+			</div>
+			<div class="titles">提问内容</div>
+			<mt-field placeholder="请输入内容" type="textarea" rows="8" class="contstext" v-model.trim="replymsg"></mt-field>
+			<div class="btnCont">
+				<!-- <mt-button type="primary" size="large" @click="submits">提交</mt-button> -->
+				<mt-button class="button" type="primary" size="large" @click="submits">提  交</mt-button>
+			</div>
+			<router-link :to="urls">
+        		<div class="btnCont">
+					<!-- <mt-button type="primary" size="large">查看所提问题</mt-button> -->
+					<mt-button class="button" type="primary" size="large">查看所提问题</mt-button>
+				</div>
+        	</router-link>
+			<mt-actionsheet cancel-text="" :actions="actions" v-model="sheetVisible"></mt-actionsheet>
+
+			<!--<mt-picker :slots="slots" @change="onValuesChange" v-show="sheetVisible" @click="choiceType(picker)">-->
+        <!---->
+      <!--</mt-picker>-->
+      <mt-popup v-model="sheetVisible" position="bottom" class="xitong-wrapper">
+        <div>
+          <mt-picker :slots="slots" @change="onValuesChange"></mt-picker>
+        </div>
+        <div>
+          <mt-button type="default" @click="cancelQuestion">取消</mt-button>
+          <mt-button type="primary" @click="enSureQuestion">确定</mt-button>
+        </div>
+
+      </mt-popup>
+
+		</div>
+	</div>
+</template>
+
+<script>
+	import AppHeader from "@/components/HeaderComponent";
+	import { httpGetMethod, State } from "../../../utils/api.js"; //添加公共组件
+
+	export default {
+		name: 'WyzxComponent',
+		data: function() {
+			return {
+				pageh:{
+					height: State().pageh
+        },
+        qstypes:"",
+        qstype: "",//提问类型名称
+        qscode: "",//提问类型code
+        replymsg: "",//提问
+        urls: "/wyzxlb",//跳转到专家问题列表页面
+        sheetVisible: false,
+        actions: [],
+				slots: [
+					{
+						flex: 1,
+						values: [],
+						className: 'slot1',
+						textAlign: 'center'
+					}
+				],
+				lists: [],
+				submiting: true,//防止重复提交
+			}
+		},
+		components: {
+      AppHeader
+		},
+		mounted(){
+			let self = this;
+			httpGetMethod("hrs-ess/app/selectCategory.action?",{},function(result){
+				if(result.success){
+					self.lists = result.data;
+				}else{
+					self.$toast({
+						message: '获取提问类型失败！',
+						position: 'middle',
+						duration: 2000
+					});
+					return;
+				}
+			});
+		},
+		methods: {
+			init(){
+				this.slots[0].values = this.lists.map(function(item){ return item.NAME });
+			},
+			listShow(){
+				this.init();
+				this.sheetVisible = true;
+			},
+			onValuesChange(picker, values) {
+				let self = this;
+				self.qstypes = values;
+			},
+      enSureQuestion : function () {
+			  let self = this;
+        self.qstype = self.qstypes[0];
+        self.lists.forEach(function(item){
+          if(self.qstype == item.NAME)
+          {
+            self.qscode = item.CODE;
+          }
+        });
+        self.sheetVisible = false;
+      },
+      cancelQuestion: function () {
+        this.sheetVisible = false;
+      },
+			//提交
+			submits(){
+				let self = this;
+		        if(!self.qstype){
+		        	self.$toast({
+						message: '请选择提问类型！',
+						position: 'middle',
+						duration: 2000
+					});
+					return;
+		        }
+		        if(!self.replymsg){
+		        	self.$toast({
+						message: '输入内容不能为空！',
+						position: 'middle',
+						duration: 2000
+					});
+					return;
+		    	}
+		    	httpGetMethod("hrs-ess/app/saveAskQuestion.action?",{
+		    		category: self.qscode,
+	                pQuestCode: "",
+	                content: self.replymsg
+		    	},function(result){
+		    		//提交成功数据初始化
+		    		self.qstype = "";
+		    		self.replymsg = "";
+		    		self.submiting = true;
+					if(result.success){
+						self.$toast({
+							message: result.msg || '保存成功！',
+							position: 'middle',
+							duration: 2000
+						});
+					}else{
+						self.$toast({
+							message: '获取提问类型失败！',
+							position: 'middle',
+							duration: 2000
+						});
+						return;
+					}
+				});
+			},
+		},
+	}
+</script>
+<style type="text/css">
+
+	.button {
+      width: 100%;
+      background-color: #4c9beb !important;
+      margin: 0;
+    }
+
+	.wyzx-main{
+		padding: 0 15px;
+	    background: #fff;
+	}
+	.wyzx-main .titles{
+		font-size: 14px;
+		line-height: 36px;
+	}
+	.wyzx-main .mint-field-core{
+		font-size: 14px;
+		color: #505050;
+	    background: transparent;
+	}
+	.wyzx-main textarea.mint-field-core{
+		resize: none;
+	}
+	.wyzx-main .checkqstype,.wyzx-main .contstext{
+	    background: #fcf9f2;
+	    border: 1px solid #ead8a6;
+	    border-radius: 4px;
+	}
+	.wyzx-main .checkqstype{
+		padding: 5px 10px;
+	}
+	.wyzx-main .contstext .mint-cell-wrapper{
+		background-image: none;
+	}
+	.wyzx-main .fa-angle-down{
+		color: #888;
+	}
+	.wyzx-main .btnCont{
+		margin-top: 20px;
+		padding: 0 18px;
+	}
+	/*.wyzx-main .picker{*/
+	    /*z-index: 2019;*/
+	    /*position: fixed;*/
+	    /*left: 0;*/
+	    /*bottom: 0;*/
+	    /*width: 100%;*/
+	    /*background: #fff;*/
+	/*}*/
+
+  .xitong-wrapper{
+    height: auto;
+    width: 100%;
+    background: #fff;
+  }
+  .xitong-wrapper .picker-slot.picker-slot-left {
+    text-align: center;
+  }
+  .IT-navigation{
+    height:40px;
+    text-align: center;
+    line-height: 40px;
+    border-bottom: 1px solid #ebebeb;
+  }
+  .xitong-wrapper .mint-button {
+    float: left;
+    width: 50%;
+    font-size: 16px;
+    box-shadow: 0 0;
+    border-radius: 0;
+  }
+  .xitong-wrapper .mint-button--primary {
+    background-color: #3d74d9;
+  }
+</style>

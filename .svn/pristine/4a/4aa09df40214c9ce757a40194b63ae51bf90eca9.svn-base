@@ -1,0 +1,146 @@
+import Vue from 'vue';
+import Router from 'vue-router';
+import Hello from '@/components/Hello';
+import firstConpontent from '@/components/firstcomponent';
+import secondcomponent from '@/components/secondcomponent';
+
+import HomeComponent from '@/components/homecomponent';
+
+//敬请期待
+import JqqdComponent from '@/components/JqqdComponent';
+
+//信息查询
+import GrxxComponent from '@/components/1_1GrxxComponent';
+import XcxxComponent from '@/components/1_2XcxxComponent';
+import BxxxComponent from '@/components/1_3BxxxComponent';
+import QynjComponent from '@/components/1_4QynjComponent';
+import GrjxComponent from '@/components/1_5GrjxComponent';
+import XcsComponent from '@/components/1_6XcsComponent';
+
+
+//业务办理
+import ItsqComponent from '@/components/2-3ItsqComponent';
+import FwcxComponent from '@/components/2-5FwcxComponent';
+import CxjgComponent from '@/components/2-5-1CxjgComponent';
+import FwxqComponent from '@/components/2-5-2FwxqComponent';
+
+//政策查询
+import ZchxComponent from '@/components/3_1ZchxComponent';
+import WyzxComponent from '@/components/3_2WyzxComponent';
+import YlbxComponent from '@/components/1_7YlbxComponent';
+import YlbxDetailComponent from '@/components/1_7_1YlbxComponent';
+
+//管理支持
+import JyfxComponent from '@/components/4_3jyfxComponent';
+import TxlComponent from '@/components/4_4txlComponent';
+import TxlListComponent from '@/components/4_4_1txlComponent';
+import ZjdfComponent from '@/components/4_5zjdfComponent';
+import ZjdfxqComponent from '@/components/4_5_1ZjdfxqComponent';
+
+Vue.use(Router)
+
+export default new Router({
+	/*mode: "history",*/
+	routes: [{
+			path: '/test',
+			name: 'Hello',
+			component: Hello
+		},
+		{
+			path: '/first',
+			component: firstConpontent
+		},
+		{
+			path: '/second',
+			component: secondcomponent
+		},
+		{
+			path: '/',
+			component: HomeComponent
+		},
+		{
+			path: '/grxx',
+			component: GrxxComponent
+		},
+		{
+			path: '/xcxx',
+			component: XcxxComponent
+		},
+		{
+			path: '/bxxx',
+			component: BxxxComponent
+		},
+		{
+			path: '/qynj',
+			component: QynjComponent
+		},
+		{
+			path: '/grjx',
+			component: GrjxComponent
+		},
+		{
+			path: '/xcs',
+			component: XcsComponent
+		},
+		{
+			path: '/ylbx',
+			component: YlbxComponent
+		},
+		{
+			path: '/jqqd',
+			component: JqqdComponent
+		},
+		{
+			path: '/zchx',
+			component: ZchxComponent
+		},
+		{
+			path: '/ylbx/:id',
+			component: YlbxComponent
+		},
+		{
+			path: '/ylbxdetail/:id/:knowledgeId',
+			component: YlbxDetailComponent
+		},
+		{
+			path: '/jyfx',
+			component: JyfxComponent
+		},
+		{
+			path: '/txl',
+			component: TxlComponent
+		},
+    {
+      path: '/txldetail/:deptCode/:empName/:empTel',
+      component: TxlListComponent
+    },
+		{
+			path: '/zjdf',
+			component: ZjdfComponent
+		},
+    {
+      path: '/zjdfdetail/:type/:questCode',
+      component: ZjdfxqComponent
+    },
+    {
+			path: '/itsq',
+			component: ItsqComponent
+		},
+    {
+			path: '/fwcx',
+			component: FwcxComponent
+		}, {
+			path: '/cxjg',
+			component: CxjgComponent
+		},
+    {
+			path: '/fwxq',
+			component:FwxqComponent
+		},
+    {
+			path: '/wyzx',
+			component: WyzxComponent
+		}
+	]
+})
+

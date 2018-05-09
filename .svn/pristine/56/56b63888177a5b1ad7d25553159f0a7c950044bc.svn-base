@@ -1,0 +1,153 @@
+<template>
+
+  <div>
+    <mt-header class="header" fixed title="新建报销单">
+      <router-link to="/bxxx" slot="left">
+        <mt-button icon="back">返回</mt-button>
+      </router-link>
+    </mt-header>
+
+    <div class="xjbxd-main">
+      <div class="xjbxd-jbxx">
+        基本信息
+      </div>
+      <mt-field label="单据类型：" placeholder="请输入单据类型"></mt-field>
+      <mt-field label="申请日期：" placeholder=""></mt-field>
+      <mt-field label="报销人：" placeholder="Input password"></mt-field>
+      <mt-field label="费用部门：" placeholder="Input tel"></mt-field>
+      <mt-field label="成本中心：" placeholder="Input website"></mt-field>
+      <mt-field label="发票数量：" placeholder="只能填写大于0的数字" type="number"></mt-field>
+      <mt-field label="申请事由：" placeholder="请填写"></mt-field>
+      <div class="xjbxd-jbxx xjbxd-fp">
+        发票信息
+      </div>
+      <div class="xjbxd-fpxx">
+        <div class="xjbxd-fpxx-header">
+          <li>发票序号1</li>
+          <li>11</li>
+          <div class="clear"></div>
+        </div>
+        <div class="xjbxd-fpxx-list">
+
+          <div class='itsq-item'>
+            <mt-cell v-bind:title="name">
+              <span>hahah</span>
+              <span class="fa fa-angle-down"> </span>
+            </mt-cell>
+          </div>
+
+          <mt-field label="发票数量：" placeholder="只能填写大于0的数字" type="number"></mt-field>
+
+          <div class="fwcx-item" @click="startTimeOpen">
+            <mt-field readonly disabled label="发票日期：" placeholder="请选择" :value="pickerStartTime | formatDate">
+              <span class="fwcx-date"></span>
+            </mt-field>
+          </div>
+        </div>
+        <div class="clear"></div>
+      </div>
+      <div class="xjbxd-zjfp">
+        +增加发票
+      </div>
+
+      <!--选择费用项目-->
+      <mt-popup v-model="expenseVisible" position="bottom" class="xitong-wrapper">
+        <div class="IT-navigation">
+          选择费用项目
+        </div>
+        <div>
+          <mt-picker :slots="slots1" @change="onValuesChangeSytem"></mt-picker>
+        </div>
+        <div>
+          <mt-button type="default" style="width: 50%;float: left;font-size: 14px" @click="cancelSystem">取消</mt-button>
+          <mt-button type="primary" style="width: 50%;float:left;font-size: 14px" @click="enSureSystem">确定</mt-button>
+        </div>
+
+      </mt-popup>
+    </div>
+  </div>
+</template>
+
+<script>
+  export default {
+    name: 'XjbxdComponent',
+    data: function() {
+      return {
+        name:'费用项目：',
+        expenseVisible:false
+      }
+    },
+    components: {
+
+    },
+    methods: {
+
+    },
+  }
+</script>
+<style type="text/css">
+  .header {
+    background-color: #3a71dc !important;
+  }
+
+  .clear {
+    clear: both;
+  }
+
+  .xjbxd-main {
+    font-family: "微软雅黑";
+    width: 100%;
+    text-align: left;
+  }
+
+  .xjbxd-jbxx {
+    width: 95%;
+    margin: auto;
+    height: 30px;
+    line-height: 30px;
+    color: #8c8c8c;
+    font-size: 13px;
+  }
+
+  .xjbxd-fp {
+    margin-top: 10px;
+  }
+
+  .xjbxd-fpxx{
+    background: white;
+  }
+
+  .xjbxd-fpxx-header{
+    width: 100%;
+    height: 48px;
+    background: white;
+    font-size: 16px;
+    line-height: 48px;
+  }
+
+  .xjbxd-fpxx-header li:nth-child(1){
+    float: left;
+    margin-left: 10px;
+  }
+
+  .xjbxd-fpxx-header li:nth-child(2){
+    float: right;
+    margin-right: 10px;
+  }
+
+  .xjbxd-fpxx-list{
+    width: 90%;
+    float: right;
+  }
+
+  .xjbxd-zjfp{
+    width: 100%;
+    height: 48px;
+    line-height: 48px;
+    text-align: center;
+    background: white;
+    font-size: 16px;
+    color: #6f97e5;
+  }
+
+</style>

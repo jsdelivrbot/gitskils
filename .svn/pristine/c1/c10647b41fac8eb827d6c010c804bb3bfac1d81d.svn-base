@@ -1,0 +1,172 @@
+<template>
+
+	<div>
+
+		<app-header title="通讯录" ></app-header>
+		<div class="txl-main">
+
+      <a class="mint-cell mint-field">
+        <div class="mint-cell-wrapper">
+          <div class="mint-cell-title">
+            <span class="mint-cell-text">单位</span>
+          </div>
+          <div class="mint-cell-value" @click="listShow">
+            <input placeholder="选择企业" type="text" class="mint-field-core" readonly="readonly" v-model="enterprise">
+            <div class="mint-field-other">
+              <span class="fa fa-angle-down"></span>
+            </div>
+          </div>
+        </div>
+      </a>
+			<mt-field label="姓名" placeholder="请输入姓名" v-model="empName"></mt-field>
+			<mt-field label="电话" placeholder="办公电话/手机号码" type="tel" v-model="empTel"></mt-field>
+      <mt-actionsheet cancel-text="" :actions="actions" v-model="sheetVisible"></mt-actionsheet>
+      <mt-picker :slots="slots" @change="onValuesChange" v-show="sheetVisible"></mt-picker>
+      <div class="searchbtn">
+        <router-link :to='urlData'>
+          <mt-button type="primary" @click="searchMsg">查询</mt-button>
+        </router-link>
+      </div>
+
+		</div>
+
+
+	</div>
+</template>
+
+<script>
+	import AppHeader from "@/components/HeaderComponent";
+	import { httpGetMethod } from "../utils/api.js"; //添加公共组件
+	export default {
+		name: 'TxlComponent',
+		data: function() {
+			return {
+        enterprise: "",
+        sheetVisible: false,
+        actions: [],
+        slots: [
+          {
+            flex: 1,
+            values: [],
+            className: 'slot1',
+            textAlign: 'center'
+          },
+          {
+            flex: 1,
+            values: [],
+            className: 'slot3',
+            textAlign: 'center'
+          }
+        ],
+        lists:[],
+        firstName:"",
+        deptCode: "",//机构编码
+        empName: "",//员工姓名
+        empTel: "",//手机、办公电话
+        urlData:""
+			}
+		},
+		components: {
+			AppHeader
+		},
+		mounted(){
+      let self = this;
+      httpGetMethod("hrs-ess/app/getBookDeptList.action?",{},function(result){
+        self.lists = result.data;
+      });
+    },
+		methods: {
+		  init(){
+        this.slots[0].values = this.lists.map(function(item){ return item.text });
+        this.firstName = this.slots[0].values[0];
+        this.slots1(0);
+      },
+      slots1(i){
+        let childs = this.lists[i].children;
+        this.slots[1].values = childs.map(function(item){ return item.text });
+
+      },
+      deptCodes(_index0,_index1){
+        this.deptCode = this.lists[_index0].children[_index1].id;
+        console.log(this.deptCode);
+      },
+		  listShow(){
+		  this.init()
+		    this.sheetVisible = true;
+		  },
+      onValuesChange(picker, values) {
+        if(this.lists&&this.lists.length){
+          let _index0 = this.slots[0].values.indexOf(values[0]);
+          _index0 = (_index0 == -1) ? 0 : _index0;
+          if(this.firstName != values[0]){
+            this.firstName = values[0];
+            this.slots1(_index0);
+          }
+          this.enterprise = values[1];
+          let _index1 = this.slots[1].values.indexOf(values[1]);
+          _index1 = (_index1 == -1) ? 0 : _index1;
+          this.deptCodes(_index0,_index1);
+        }
+      },
+      searchMsg(){
+        if (!(this.deptCode || this.empName || this.empTel)) {
+          this.$toast({
+            message: '单位、姓名、电话三者不能同时为空！',
+            position: 'middle',
+            duration: 2000,
+            className:"toast"
+          });
+          return;
+        }
+        if (this.empTel && this.empTel.length < 4) {
+          this.$toast({
+            message: '电话号码必须四位以上！',
+            position: 'middle',
+            duration: 2000,
+            className:"toast"
+          });
+          return;
+        }
+        this.urlData = "/txldetail/" + (this.deptCode || "&nbsp;") + "/" + (this.empName || "&nbsp;") + "/" + (this.empTel || "&nbsp;");
+      }
+		},
+	}
+</script>
+<style type="text/css">
+  body{
+    margin: 0;
+    background: #f5f5f5;
+  }
+	.txl-main{
+    color: #505050;
+	}
+	.txl-main .mint-field .mint-cell-title{
+	  width: 50px;
+	  text-align: left;
+	}
+	.txl-main .mintui.mintui-field-error{
+	  color: transparent;
+	}
+	.txl-main .mint-field-core{
+	  color: #505050;
+	}
+	.txl-main .fa-angle-down{
+    color: #888;
+  }
+  .txl-main .picker{
+    z-index: 2019;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background: #fff;
+  }
+  .txl-main .searchbtn{
+    margin: 30px 15px;
+  }
+  .txl-main .searchbtn button{
+    width: 100%;
+  }
+  .txl-main .toast{
+    width: 60%;
+  }
+</style>

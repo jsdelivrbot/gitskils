@@ -1,0 +1,142 @@
+<template>
+
+	<div>
+		<app-header title="建设中">
+			<!--<div slot='right' @click="handleClose">
+				<span class="fa fa-camera-retro fa-lg"></span>
+				<label for="">111</label>
+			</div>-->
+		</app-header>
+		<div class="jqqd-main">
+
+			<div class="jqqd-content"><img class="jqqd-img" src="../../static/jqqd.png"></div>
+
+		</div>
+
+	</div>
+</template>
+
+<script>
+	import AppHeader from "@/components/HeaderComponent";
+	import { State } from "../utils/api.js";
+	export default {
+		name: 'JqqdComponent',
+		data: function() {
+			return {
+				pageh: {
+					height:State().pageh
+				}
+			}
+		},
+		components: {
+			AppHeader
+		},
+		methods: {
+			handleClose: function() {
+				alert("可复用的头部组件");
+				this.test(0)
+			},
+			test: function(test) {
+				let self = this;
+
+				httpGetMethod("hrs-ess/app/getCommonSenseList.action?", {
+					RowNum: test,
+					PageSize: 2
+				}, function(result) {
+          console.log(result)
+					self.list = result.data;
+
+				})
+			}
+		},
+		mounted: function() {
+			console.log("页面启动");
+      this.$http.post('http://10.246.137.221/fss/otherBillPubAction_addRmaOtherBill.action?', {
+        "saveOrSubmit" : 1,                    // 0  保存 1 提交
+        'rmaOtherBill.payModeName':'银企直连',
+        'rmaOtherBill.payModeCode':'003',
+        "rmaOtherBill.billCode" : '系统自动生成',          //报销单编号
+        "rmaOtherBill.creater" : '刘鹏',             //创建人
+        "rmaOtherBill.remark" : '111',              //申请事由
+        "rmaOtherBill.billNumber": '1',            //票据张数
+        "rmaOtherBill.applyEmpId": '00617301',           //申请人id
+        "rmaOtherBill.applyEmpName": '刘鹏',         //申请人名称
+        "rmaOtherBill.applyOrgId": '20021007',           //员工的组织ID
+        "rmaOtherBill.applyOrgCode": '20021007',           //员工的组织code
+        "rmaOtherBill.applyorgsfname": '报销核算运营部',         // 员工的组织名称
+        "rmaOtherBill.applyDeptOrgCode": '20021007',       //人员所属部门编码
+        "rmaOtherBill.applyDeptOrgSfname": '报销核算运营部',       //人员所属部门名称
+
+
+        "rmaOtherBill.apprOrgId": '20021007',                //审批组织机构ID
+        "rmaOtherBill.apprOrgCode": '20021007',              //审批组织机构编码
+        "rmaOtherBill.approrgsfname": '报销核算运营部',            //审批组织机构名称
+        "rmaOtherBill.currcyId":'RMB',
+        'rmaOtherBill.forReimbursementName':"刘鹏",
+        'rmaOtherBill.forReimbursementCode':'20021007',
+        'rmaOtherBill.forReimbursementOrgName':'报销核算运营部',
+        'rmaOtherBill.forReimbursementOrgCode':'20021007',
+        "rmaOtherBill.currcyCode":'RMB',
+        "rmaOtherBill.currcyName":'人民币',
+        "rmaOtherBill.rate":'0.00',
+
+
+
+        "rmaOtherBill.costCentCode":'8SO1303001',                //成本中心编码
+        "rmaOtherBill.compCode": '1180',                     //公司编码
+        "rmaOtherBill.bcurrcyId":'RMB',                        //人民币
+        "rmaOtherBill.bcurrcyAmount":'100.00',                   //本位币金额
+        "rmaOtherBill.bcurrcyCode":'RMB',                     //本位币币种
+        "rmaOtherBill.billAmount":'100.00',                       //报销金额
+        "rmaOtherBill.accoObjCode":'',                       // 审批维度
+        "rmaOtherBill.accoObjName":'',
+        "rmaOtherBill.accoObjValue":'',
+        "rmaOtherBill.accoObjValueDesc":'',
+
+
+        "rmaOtherBill.expTypeCode1":'',            // 一级费用类型编码
+        "rmaOtherBill.expTypeName1":'',              // 一级费用类型类型
+        "rmaOtherBill.expTypeCode2":'',             // 二级费用类型编码
+        "rmaOtherBill.expTypeName2":'',            // 二级费用类型名称
+        "rmaOtherBillPayOffsJson":'[]',
+        "rmaOtherBillApplyJson":'',
+        "rmaOtherBillLoadJson":'[]',
+        "rmaOtherBill.pubApplyNos":'',
+        "rmaOtherBillExpensesJson":"[{'assists':[{'assiObjCode':'001','assiObjName':'成本中心','assiObjValue':'8SO1303001','assiObjValueDesc':'报销核算运营部','del':'0'}],'bcurrcyAmount':'100.00','rate':'1.00000','billAmount':'100.00','currentPayAmount':0,'isDeduction':'0','expTypeName':'近途交通费','expTypeCode':'001001002','expTypeFouth':'6055C84E79B711E7A88F00155D6D1F01','expTypeFouthName':'退改签车票','invoiceCurrcyName':'人民币','invoiceCurrcyId':'RMB','happenDate':'','taxtpName':'','taxtpCode':null,'suppName':'','suppCode':null,'remark':'','costObjCode':null,'costObjName':'','costObjValue':'','costObjDesc':'','taxtpAmount':'0.00','ftaxtAmount':'0.00','invoiceCode':'','expControlType':'','suppFlag':'','isSingle':'1','bankAccount':'','bankKey':'','orderNo':'1','invoiceMark':'','originalTaxAmount':'0.00','expenseOnceSupp':{}}]"
+
+      }, {
+        headers: {
+          "dataType": "json",
+        },
+        emulateJSON: true
+      }).then(function(response) {
+        console.log(response);
+
+      }, function(response) {
+        console.log(response)
+      });
+
+		}
+	}
+</script>
+<style type="text/css">
+	.jqqd-main {
+		background: #f5f5f5;
+		position: absolute;
+		top: 40px;
+		bottom: 0;
+		left: 0;
+		right: 0;
+/*		display: flex;
+*/	}
+
+	.jqqd-content {
+		margin: 0 auto;
+		padding-top: 160px;
+		width: 230px;
+		height: 240px;
+	}
+	.jqqd-content .jqqd-img {
+		width: 100%;
+	}
+</style>

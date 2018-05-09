@@ -1,0 +1,144 @@
+<template>
+
+	<div style="overflow: hidden;" >
+		<app-header title="个人绩效"></app-header>
+
+		<div class="grjx-main"　:style="pageh">
+			<mt-loadmore　:style="pageh" :top-method="loadTop" ref="loadmore" :top-distance='distance'>
+				<ul>
+
+					<li class="grjx-item" v-for='item in list'>
+						<h4>{{item.strBeginDate}} - {{item.strEndDate}}</h4>
+						<div class="grjx-body">
+							<div class="grjx-left">
+								<span>{{item.yearText}}</span>
+								<span>考核结果</span>
+							</div>
+							<div class="grjx-right">
+								<strong>{{item.chkLevel2}}</strong>
+							</div>
+						</div>
+					</li>
+
+				</ul>
+			</mt-loadmore>
+		</div>
+	</div>
+</template>
+
+<script>
+	import AppHeader from "@/components/HeaderComponent";
+	import { Loadmore } from 'mint-ui';
+	import { httpGetMethod } from "../utils/api.js";
+	import { State } from "../utils/api.js";
+	export default {
+		name: 'GrjxComponent',
+		data: function() {
+			return {
+				list: [],
+				distance: 10,
+				pageh: {
+					height: State().pageh
+				},
+				pagewh: {
+					height: State().wh +　"px"
+				},
+			}
+		},
+		components: {
+			AppHeader,
+			Loadmore
+		},
+		methods: {
+			loadTop: function() {
+				this.$refs.loadmore.onTopLoaded();
+			}
+		},
+		mounted: function() {
+
+			let self = this;
+
+			httpGetMethod("hrs-ess/app/queryCheck.action?", {
+				RowNum: 0,
+				PageSize: 20
+			}, function(result) {
+
+				result.data.forEach(function(item) {
+					item.yearText = new Date(item.beginDate).getFullYear();
+				});
+
+				self.list = result.data;
+
+			})
+
+		}
+	}
+</script>
+
+<style type="text/css">
+	ul,
+	li {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+	}
+	ul{
+		padding: 10px 0;		
+	}
+	.grjx-main {
+		background: #f5f5f5;
+		width: 100%;
+		overflow-y: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+	
+	.grjx-item {
+		width: 90%;
+		margin: 0 auto 10px;
+		background: #fff;
+		border-radius: 10px;
+		text-align: left;
+		box-shadow: 0px 0px 5px 0px #ccc;
+	}
+	
+	.grjx-item h4 {
+		padding: 10px 20px;
+		background: #f1f6fe;
+		color: #505050;
+		border-top-left-radius: 10px;
+		border-top-right-radius: 10px;
+	}
+	
+	.grjx-body {
+		background: #fff url(../../static/grjx.png) no-repeat center;
+		background-size: cover;
+		padding: 10px;
+		display: flex;
+		justify-content: flex-start;
+		align-items: center;
+		border-bottom-left-radius: 10px;
+		border-bottom-right-radius: 10px;
+	}
+	
+	.grjx-left {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		color: #3a71dc;
+	}
+	
+	.grjx-left span:first-of-type {
+		background: #f1f6fe;
+		display: block;
+		border-radius: 10px;
+		padding: 3px 5px;
+	}
+	
+	.grjx-right {
+		width: 100px;
+		font-size: 30px;
+		margin-left: 10px;
+		color: #3a71dc;
+	}
+</style>

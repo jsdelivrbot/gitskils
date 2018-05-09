@@ -1,0 +1,134 @@
+<template>
+
+	<div>
+
+		<app-header title="查询结果"></app-header>
+
+		<div class="cxjg-main" :style="pageh">
+      <mt-loadmore :auto-fill="false" :top-method="loadTop" :bottom-method="loadBottom" :bottom-all-loaded="allLoaded" ref="loadmore" :top-distance='10'>
+			  <div class="cxjg-item" v-for="item in list">
+				  <router-link class="mint-cell" :to='item.path'>
+            <span class="mint-cell-mask"></span>
+					  <div class="mint-cell-left"></div>
+					  <div class="mint-cell-wrapper">
+						  <div class="mint-cell-title">
+							  <span class="mint-cell-text">{{item.ShortDescription}}</span>
+							  <span class="mint-cell-label">服务单号&emsp;{{item.OrderNo}}</span>
+							  <span class="mint-cell-label">提报时间&emsp;{{item.SubmitDate}}</span>
+							  <span class="mint-cell-label">单据状态&emsp;{{item.OrderState}}</span>
+						  </div>
+						  <div class="mint-cell-value is-link"><span class=""></span></div>
+					  </div>
+					  <div class="mint-cell-right"></div> <i class="mint-cell-allow-right"></i>
+          </router-link>
+			  </div>
+        <div style="height: 32px;line-height: 32px;text-align: center" v-if='allLoaded'>已加载到底部</div>
+      </mt-loadmore>
+
+		</div>
+
+	</div>
+</template>
+
+<script>
+	import AppHeader from "@/components/HeaderComponent";
+	import { Cell } from 'mint-ui';
+	import { State } from "../utils/api.js";
+  import { httpGetMethod } from "../utils/api.js"; //添加公共组件
+  import { httpService } from "../utils/api.js"; //添加公共组件
+  import { Loadmore } from 'mint-ui';
+
+	export default {
+		name: 'CxjgComponent',
+		data: function() {
+			return {
+				pageh: {
+					height: State().pageh,
+				},
+        list:[],
+        allLoaded: false,
+        pageIndex:0,
+        PageSize: 10
+			}
+		},
+		components: {
+			AppHeader,
+			Cell,
+      Loadmore
+		},
+		methods: {
+      loadTop: function() {
+        let self = this;
+        this.pageIndex = 0;
+        this.getdata(function(lt) {
+          self.list = [];
+          lt.forEach(function(item) {
+            item.path = "/fwxq/" + item.OrderNo;
+            self.list.push(item);
+          });
+          self.allLoaded = false;
+          self.$refs.loadmore.onTopLoaded();
+          if(lt.length < self.PageSize) {
+            self.allLoaded = true;
+          }
+        }, true);
+      },
+      loadBottom: function() {
+        let self = this;
+        this.pageIndex++;
+        this.getdata(function(lt) {
+          self.$refs.loadmore.onBottomLoaded();
+          if(lt.length < self.PageSize) {
+            self.allLoaded = true;
+          }
+        }, true);
+      },
+      getdata: function(fun, isshowload) {
+        let self = this;
+        httpService("ServiceOrderSearch.asmx/QueryServiceOrder?",{
+          key:"",
+          token:'',
+          userCode:'jing.wang1',
+          orderNo:self.orderNo,
+          shortdescription:self.shortdescription,
+          startDate:self.startDate,
+          endDate:self.endDate,
+          pageIndex:self.pageIndex
+        },function(result) {
+          result.OrderSeachResultList.forEach(function(item) {
+            item.path = "/fwxq/" + item.OrderNo;
+            self.list.push(item);
+          });
+
+          if(fun) {
+            fun(result.OrderSeachResultList)
+          }
+
+        }, function() {}, isshowload);
+      }
+    },
+    mounted: function () {
+      this.orderNo = this.$route.params.orderNo;
+      this.shortdescription = this.$route.params.shortdescription;
+      this.startDate = this.$route.params.startDate;
+      this.endDate = this.$route.params.endDate;
+      let self = this;
+      this.getdata(function(lt){
+        if(lt.length < self.PageSize) {
+          self.allLoaded = true;
+        }
+      });
+    }
+	}
+</script>
+<style type="text/css">
+	.cxjg-main {
+    overflow-y: auto;
+		text-align: left;
+	}
+
+	.cxjg-main .mint-cell-wrapper {
+		padding: 10px;
+		background-size: 0px;
+	}
+</style>

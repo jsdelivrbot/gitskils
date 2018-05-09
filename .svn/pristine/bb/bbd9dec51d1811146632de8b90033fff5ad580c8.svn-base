@@ -1,0 +1,406 @@
+<template>
+
+  <div class="Xcs-div-main">
+    <app-header title="小常识">
+      <span slot="right" @click="handleClick">
+        <img src="../assets/filter.png" alt="" class="filter-img">
+      </span>
+    </app-header>
+    <div class="XCSsearch">
+      <form action="javascript:return true;">
+        <input v-on:input="XcsSearches()" @keyup.enter="tosearch($event)" v-model="keyword" type="search" maxlength="20" placeholder="搜索">
+        <span class="fa fa-search"></span>
+        <i @click="clear" class="fa fa-times-circle" v-if="keyword"></i>
+      </form>
+    </div>
+
+    <!--列表-->
+    <div class="Xcslist-main" :style="pageh">
+      <mt-loadmore :auto-fill="false" :top-method="loadTop" :bottom-method="loadBottom" :bottom-all-loaded="allLoaded" ref="loadmore" :top-distance='10' bottom-pull-text="上拉加载更多" bottom-drop-text="释放加载" :style="pagesh">
+        <router-link class="Xcslist" v-for="(item, index) in XcsList" :to='item.path' :key="index">
+          <div>
+            <div>
+              <li>{{item.title}}</li>
+              <li class="fa fa-angle-right"></li>
+            </div>
+            <div class="clear" style="height: 0"></div>
+            <div>
+              <li>{{item.categoryName}}</li>
+              <li>{{item.sensePubDateString}}</li>
+            </div>
+          </div>
+        </router-link>
+        <div style="height: 32px;line-height: 32px;" v-if='XcsList.length>10 && allLoaded'>已加载到底部</div>
+      </mt-loadmore>
+    </div>
+
+    <mt-popup v-model="popupVisible" position="right" class="model">
+
+      <!--筛选条件-->
+      <div class="sxyi">
+        <span>筛选条件</span>
+      </div>
+      <div class="sxyi-list">
+        <li v-for="item in sxtj" v-bind:class="{active: activeName == item.ITEMNAME}" @click="choiceTj(item.ITEMNAME,item.ITEMCODE)">{{item.ITEMNAME}}</li>
+        <div class="clear"></div>
+      </div>
+
+      <div class="XcsSubmit">
+        <mt-button class="button_gray" @click="reset()" type="default" style="width: 50%;float: left;font-size: 16px">重置</mt-button>
+        <mt-button class="button_blue" @click="tosearch()" type="primary" style="width: 50%;float:left;font-size: 16px">确定</mt-button>
+      </div>
+
+    </mt-popup>
+  </div>
+
+</template>
+
+<script>
+  import { Tool } from "../utils/tool.js" ;
+  import AppHeader from "@/components/HeaderComponent";
+  import { httpGetMethod } from "../utils/api.js"; //添加公共组件
+  import { State } from "../utils/api.js";
+  import { Loadmore } from 'mint-ui';
+  export default {
+    name: 'XcsComponent',
+    data: function() {
+      return {
+        XcsList:[],
+        pageh: {
+          height: State().wh - 94 + "px"
+        },
+        pagesh: {
+          "min-height": State().wh - 94 + "px"
+        },
+        allLoaded: false,
+        popupVisible:false,
+        activeName: '全部',
+        sxtj:[],
+        keyword:'',
+        PageSize: 20,
+        RowNum: 0,
+        cateCode:''
+      }
+    },
+    components: {
+      AppHeader,
+      Loadmore
+    },
+    methods: {
+      loadTop: function() {
+        let self = this;
+        this.RowNum = 0;
+        this.getdata(function(lt) {
+          self.XcsList = [];
+          lt.forEach(function(item) {
+            item.path = "/ylbxdetail/" + 10 + "/" + item.noticeCode;
+            self.XcsList.push(item);
+          });
+          self.allLoaded = false;
+          self.$refs.loadmore.onTopLoaded();
+          if(lt.length < self.PageSize) {
+            self.allLoaded = true;
+          }
+        }, true);
+      },
+      loadBottom: function() {
+        let self = this;
+        this.RowNum++;
+        this.getdata(function(lt) {
+          self.$refs.loadmore.onBottomLoaded();
+          if(lt.length < self.PageSize) {
+            self.allLoaded = true;
+          }
+        }, true);
+      },
+      handleClick: function() {
+        this.popupVisible = true
+      },
+      choiceTj: function (name,code) {
+        this.activeName = name;
+        this.cateCode = code;
+      },
+      XcsSearches: function () {
+//        this.getdata();
+      },
+      clear: function () {
+        this.keyword = '';
+        this.XcsList = [];
+        this.getdata();
+      },
+      tosearch: function () {
+        this.XcsList = [];
+        this.getdata();
+        this.popupVisible = false;
+      },
+      reset: function () {
+        this.activeName = '全部';
+        this.cateCode = '';
+      },
+      getdata: function (fun, isshowload) {
+        let self = this;
+        httpGetMethod("hrs-ess/app/getCommonSenseList.action?", {
+          RowNum: self.RowNum,
+          PageSize: self.PageSize,
+          cateCode: self.cateCode,
+          title: self.keyword,
+        },function(result) {
+          if(result.msg == "0") {
+            self.$toast({
+              message: '暂无数据！',
+              position: 'middle',
+              duration: 500
+            });
+            return;
+          }
+          result.data.forEach(function(item) {
+            item.path = "/ylbxdetail/" + 10 + "/" + item.noticeCode;
+            self.XcsList.push(item);
+          });
+
+          if(fun) {
+            fun(result.data)
+          }
+        }, function() {}, isshowload);
+      },
+      getSxData: function() {
+        let self = this;
+        httpGetMethod("hrs-ess/app/getDictItemType.action?",{
+          dictCode: 20042,
+          itemCode: '03',
+        },function(result) {
+          result.data.push({ITEMNAME:'全部',ITEMCODE:''});
+          self.sxtj = result.data;
+        })
+      }
+    },
+    mounted: function() {
+      let self = this;
+      this.getSxData();
+      this.getdata(function(lt){
+        if(lt.length < self.PageSize) {
+          self.allLoaded = true;
+        }
+      });
+    }
+  }
+</script>
+
+<style>
+
+  .button_gray {
+    border-radius: 0 !important;
+  }
+
+  .button_blue {
+    background-color: #3d74d9 !important;
+    border-radius: 0 !important;
+  }
+
+  .mint-loadmore-bottom {
+    display: none;
+  }
+
+  li{
+    list-style: none;
+  }
+
+  .clear{
+    clear: both;
+  }
+
+  input[type='search'] {
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  input[type=search]::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+  }
+
+  .active {
+    background: #598ee2!important;
+    color: white!important;
+  }
+
+  .filter-img {
+    width: 15px;
+    height:15px;
+    position: relative;
+    top: 1px;
+  }
+
+  .XCSsearch {
+    width: 90%;
+    height:30px;
+    margin: 0 auto;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    position: relative;
+  }
+
+  .XCSsearch input {
+    width: 88%;
+    height:30px;
+    border: 1px solid #e9e9e9;
+    border-radius: 30px;
+    outline: none;
+    font-size: 13px;
+    padding-left: 12%;
+  }
+
+  .XCSsearch span {
+    position: absolute;
+    top: 19px;
+    left:10%;
+    color: #ccc;
+  }
+
+  .XCSsearch i{
+    position: absolute;
+    top: 17px;
+    right: 10%;
+    color: #ccc;
+    font-size: 15px;
+  }
+
+  .Xcslist-main {
+    overflow-y: auto;
+    background: #f5f5f5;
+    font-size: 12px;
+  }
+
+  .Xcslist {
+    display: block;
+    background:  #fff;
+    color: #505050;
+  }
+
+  .Xcslist-main .Xcslist:nth-child(odd) {
+    background: #fcfcfd;
+  }
+
+  .Xcslist-main .Xcslist:nth-child(even) {
+    background: white;
+  }
+
+  .Xcslist-main .Xcslist {
+    border-bottom: 1px solid #f4f4f4;
+    height: 64px;
+  }
+
+  .Xcslist-main .Xcslist:nth-child(1) {
+    border-top: 1px solid #f4f4f4;
+  }
+
+  .Xcslist>div {
+    width: 90%;
+    height: 55px;
+    margin: 0 auto;
+    text-align: left;
+  }
+
+  .Xcslist>div div {
+    width: 100%;
+    height: 20px;
+  }
+
+  .Xcslist>div div:nth-child(1) li:nth-child(1) {
+    float: left;
+    font-size: 14px;
+    padding-top: 7px;
+    line-height: 25px;
+    overflow: hidden;
+    display: -webkit-box;
+    text-overflow: ellipsis;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    max-width: 95%;
+  }
+
+  .Xcslist>div div:nth-child(1) li:nth-child(2) {
+    float: right;
+    font-size: 20px;
+    padding-top: 4px;
+  }
+
+  .Xcslist>div div:nth-child(3) li:nth-child(1) {
+    float: left;
+    padding: 2px 10px;
+    background: #eff4fd;
+    border-radius: 10px;
+    color: #aec5ea;
+  }
+
+  .Xcslist>div div:nth-child(3) li:nth-child(2) {
+    float: right;
+    padding-top: 3px;
+    color: #b8b8b8;
+  }
+
+  .model {
+    width: 80%;
+    height: 100%;
+    background: #fafafc;
+    overflow-y: auto;
+  }
+
+  .model .sxyi {
+    width: 90%;
+    height: 20px;
+    margin:auto;
+    margin-top: 18px;
+  }
+
+  .model .sxer {
+    margin-top: 8px;
+  }
+
+  .model .sxyi span:nth-child(1) {
+    float: left;
+    font-size: 16px;
+  }
+
+  .model .sxyi span:nth-child(2),.model .sxyi span:nth-child(3) {
+    float: right;
+    color: #d6d6d7;
+    margin-top:2px;
+  }
+
+  .model .sxyi span:nth-child(2) {
+    display: inline-block;
+    margin-left: 5px;
+    width: 15px;
+    height: 15px;
+    border: 1px solid #ebebeb;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 15px;
+  }
+
+  .sxyi-list {
+    width: 90%;
+    margin: 5px auto;
+    border-bottom: 1px solid #ebebeb;
+  }
+
+  .sxyi-list li {
+    float: left;
+    list-style: none;
+    padding: 5px 15px;
+    border: 1px solid #ebebeb;
+    color: #c4c4c4;
+    background: white;
+    font-size: 13px;
+    border-radius: 15px;
+    margin-right: 5px;
+    margin-bottom: 10px;
+  }
+
+  .XcsSubmit {
+    margin-top: 20px;
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+  }
+</style>

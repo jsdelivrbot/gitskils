@@ -1,0 +1,95 @@
+<template>
+	<div>
+		<app-header :title="title"></app-header>
+		<div class="ylbx-main" v-bind:style="pageh">
+			<h2>{{pagecon.title}}</h2>
+			<div class="ylbx-con">
+				<p v-html='pagecon.content'></p>
+			</div>
+		</div>
+
+	</div>
+</template>
+
+<script>
+	import AppHeader from "@/components/HeaderComponent";
+	import { httpGetMethod,State,modul } from "../../../utils/api.js"; //添加公共组件
+	export default {
+		name: 'YlbxDetailComponent',
+		data: function() {
+			return {
+				pageh: {
+					"min-height": State().wh - 84 + 'px'
+				},
+				title: "",
+				pagecon: {}
+			}
+		},
+		components: {
+			AppHeader
+		},
+		methods: {
+
+		},
+		mounted: function() {
+
+			let self = this;
+			let titleid = this.$route.params.id;
+			this.title = modul(titleid);
+			let knowledgeId = this.$route.params.knowledgeId;
+
+			if(titleid == "20" || titleid == "30" || titleid == "40") {
+				httpGetMethod("hrs-ess/app/getNoticeInfo.action?", {
+					noticeCode: knowledgeId
+				}, function(result) {
+					self.pagecon = result.data ? result.data : {};
+				})
+			} else {
+
+				httpGetMethod("hrs-ess/app/getKnowledgeInfo.action?", {
+					knowledgeId: knowledgeId
+				}, function(result) {
+					self.pagecon = result.data ? result.data : {};
+				});
+
+			}
+
+		}
+	}
+</script>
+<style type="text/css">
+	.ylbx-main {
+		background: #fff;
+		padding: 20px 10px;
+		text-align: left;
+		min-height: 100%;
+		overflow-x: hidden;
+	}
+
+	.ylbx-main h2 {
+		width: 100%;
+		text-align: center;
+		line-height: 25px;
+		border-bottom: 1px solid #a4a5a7;
+		color: #3d74d9;
+		font-size: 16px;
+		font-weight: normal;
+	}
+
+	.ylbx-con {
+		padding-top: 16px;
+	}
+
+	.ylbx-con p {
+		text-indent: 26px;
+		line-height: 22px;
+		color: rgb(116, 116, 116);
+		font-size: 14px;
+	}
+
+	.ylbx-con img {
+		display: block;
+		width: 100%;
+		border: 0;
+	}
+</style>

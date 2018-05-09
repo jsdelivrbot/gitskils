@@ -1,0 +1,309 @@
+<template>
+
+	<div>
+
+		<app-header title="经验分享"></app-header>
+		<div class="jyfx-main">
+
+		  <div class="search">
+        <input type="text" maxlength="15" placeholder="搜索">
+        <span class="fa fa-search"></span>
+      </div>
+      <ul
+        v-infinite-scroll="loadMore"
+        infinite-scroll-disabled="loading"
+        infinite-scroll-distance="10" class="jyfx-list">
+        <li v-for="(item,index) in list" class="jyfx-li">
+          <div class="orderNo font-size-16">{{index+1}}</div>
+          <div class="contents">
+            <div class="titles font-size-16">{{item.name}}</div>
+            <div class="type-time">{{item.qiye}}&nbsp;&nbsp;{{item.time}}</div>
+          </div>
+          <div class="discuss">
+            <div class="disicon">
+              <span class="left-arrow"></span>
+            </div>
+            <div class="praisecomment">
+              <span class="praiseicon">
+                <span class="fa fa-heart-o heart"></span>&nbsp;赞
+              </span>
+              <span class="commenticon">
+                <span class="comment"></span>&nbsp;评论
+              </span>
+            </div>
+            <span class="read-icon not-read"></span>
+          </div>
+        </li>
+      </ul>
+
+		</div>
+	</div>
+</template>
+
+<script>
+	import AppHeader from "@/components/HeaderComponent";
+  export default {
+    name: 'JyfxComponent',
+		data: function() {
+      return {
+        list:[
+          {
+          	"name":"创新岗位价值评价方法   发挥薪酬激励导向作用",
+          	"qiye":"油田企业",
+          	"time":"2017-08-18 09:38:34",
+          },
+          {
+          	"name":222,
+          	"qiye":"油田企业",
+          	"time":"2017-08-18 09:38:34"
+          },
+          {
+          	"name":333,
+          	"qiye":"油田企业",
+          	"time":"2017-08-18 09:38:34"
+          },
+          {
+          	"name":444,
+          	"qiye":"油田企业",
+          	"time":"2017-08-18 09:38:34"
+          },
+          {
+          	"name":555,
+          	"qiye":"油田企业",
+          	"time":"2017-08-18 09:38:34"
+          },
+          {
+          	"name":666,
+          	"qiye":"油田企业",
+          	"time":"2017-08-18 09:38:34"
+          },
+          {
+          	"name":777,
+          	"qiye":"油田企业",
+          	"time":"2017-08-18 09:38:34"
+          },
+          {
+          	"name":888,
+          	"qiye":"油田企业",
+          	"time":"2017-08-18 09:38:34"
+          },
+          {
+          	"name":999,
+          	"qiye":"油田企业",
+          	"time":"2017-08-18 09:38:34"
+          },
+          {
+          	"name":101010,
+          	"qiye":"油田企业",
+          	"time":"2017-08-18 09:38:34"
+          },
+        ],
+        loadMore:false,
+      }
+    },
+    components: {
+      AppHeader
+    },
+    methods: {
+
+    },
+	}
+</script>
+<style type="text/css">
+  body,ul,li{
+    margin: 0;
+    padding: 0;
+  }
+  body{
+    font-size: 12px;
+    background: #f5f5f5;
+  }
+	.jyfx-main{
+    text-align: left;
+	}
+	.jyfx-list{
+	  position: absolute;
+    top: 101px;
+    bottom: 0;
+    overflow-y: auto;
+	  list-style-type: none;
+	}
+	.jyfx-list::-webkit-scrollbar{
+    display: none;
+  }
+	.search{
+    width: 90%;
+    margin: 0 auto;
+    padding-top: 10px;
+    padding-bottom: 15px;
+    position: relative;
+  }
+  .search input{
+    width: 88%;
+    height:30px;
+    border: 1px solid #e9e9e9;
+    border-radius: 30px;
+    outline: none;
+    font-size: 12px;
+    padding-left: 12%;
+  }
+  .search span{
+    position: absolute;
+    top: 21px;
+    left: 20px;
+  }
+  .jyfx-li{
+    padding: 10px 16px;
+    line-height: 1.4;
+  }
+  .jyfx-list .jyfx-li:nth-child(odd){
+  	background-color: #fff;
+  }
+  .jyfx-list .jyfx-li:nth-child(even){
+  	background-color: #f0fafc;
+  }
+  .font-size-14{
+    font-size: 14px;
+  }
+  .font-size-16{
+    font-size: 16px;
+  }
+  .orderNo{
+    float: left;
+    color: #05a54b;
+  }
+  .contents{
+    margin-left: 30px;
+    margin-right: 60px;
+  }
+  .contents .titles{
+  	display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  	font-size: 16px;
+  	color: #5c5c5c;
+  }
+  .contents .type-time{
+    padding-top: 4px;
+  	color: #bababa;
+  }
+  .discuss {
+  	position: relative;
+  	float: right;
+  	margin-top: -20px;
+  	width: 30px;
+  	height: 20px;
+  }
+  .disicon {
+  	position: absolute;
+  	bottom: 0;
+  	right: 0;
+  	width: 24px;
+  	height: 16px;
+  	background: #83a3ba;
+  }
+  .disicon:before, .disicon:after {
+  	content: '';
+  	position: absolute;
+  	top: 5px;
+  	width: 0;
+  	height: 0;
+  	border: 3px solid #fff;
+  	border-radius: 3px;
+  }
+  .disicon:before {
+  	left: 4px;
+  }
+  .disicon:after {
+  	right: 4px;
+  }
+  .left-arrow {
+  	position: absolute;
+  	left: -5px;
+  	top: 5px;
+  	width: 0;
+  	height: 0;
+  	border-top: 3px solid transparent;
+  	border-bottom: 3px solid transparent;
+  	border-right: 5px solid #83a3ba;
+  }
+  .praisecomment {
+  	position: absolute;
+  	z-index: 98;
+  	float: left;
+  	right: 100%;
+  	bottom: -6px;
+  	margin-right: 10px;
+  	width: 130px;
+  	height: 28px;
+  	-webkit-transition:width .2s;
+  	transition:width .2s;
+  	overflow: hidden;
+  	font-size: 14px;
+  	color: #fff;
+  	line-height: 28px;
+  	background: #84a3bb;
+  	border-radius: 4px;
+  }
+  .praisecomment:after {
+  	content: "";
+  	position: absolute;
+  	left: 50%;
+  	top: 4px;
+  	bottom: 4px;
+  	width: 1px;
+  	background: #688499;
+  }
+  .praisecomment .praiseicon{
+  	float: left;
+  	width: 50%;
+  	text-align: center;
+  }
+  .praisecomment .commenticon{
+    float: right;
+    width: 50%;
+      	text-align: center;
+  }
+  .heart {
+  	font-size: 16px;
+  	font-weight: bold;
+  }
+  .comment {
+  	position: relative;
+  	padding-left: 8px;
+  	padding-right: 8px;
+  	background: transparent;
+  	border: 2px solid #fff;
+  	border-radius: 2px;
+  }
+  .comment::before, .comment::after {
+  	position:absolute;
+  	content: "";
+  	width: 0;
+  	height: 0;
+  	border-bottom: 3px solid transparent;
+  }
+  .comment::before {
+  	bottom: -5px;
+  	left: 2px;
+  	border-left: 3px solid #fff;
+  }
+  .comment::after {
+  	bottom: -2px;
+  	left: 3px;
+  	border-left: 3px solid #83a3ba;
+  }
+  .read-icon {
+  	position: absolute;
+  	right: -5px;
+  	bottom: 10px;
+  	width: 10px;
+  	height: 10px;
+  	background: transparent;
+  	border-radius: 6px;
+  }
+  .read-icon.not-read {
+  	background: #fb3e42;
+  }
+</style>

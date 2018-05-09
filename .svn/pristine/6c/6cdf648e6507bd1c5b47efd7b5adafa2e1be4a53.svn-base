@@ -1,0 +1,186 @@
+<template>
+
+	<div>
+
+		<app-header title="查询结果"></app-header>
+
+		<div class="cxjg-main" :style="pageh">
+      <!--<mt-loadmore v-if="!noresult" :auto-fill="false" :top-method="loadTop" :bottom-method="loadBottom" :bottom-all-loaded="allLoaded" ref="loadmore" :top-distance='10' bottom-pull-text="上拉加载更多" bottom-drop-text="释放加载" :style="pagesh">-->
+			  <div class="cxjg-item" v-for="item in list">
+				  <!--<router-link class="mint-cell" :to='item.path'>-->
+          <div class="mint-cell">
+            <span class="mint-cell-mask"></span>
+            <div class="mint-cell-left"></div>
+            <div class="mint-cell-wrapper">
+              <div class="mint-cell-title">
+                <span class="mint-cell-text cxjg-des">服务描述: {{item.ShortDescription}}</span>
+                <span class="mint-cell-label">服务单号: <span class="cxjg-num">1</span></span>
+                <span class="mint-cell-label">提报时间： {{item.SubmitDate}}</span>
+                <span class="mint-cell-label">单据状态： {{item.OrderState}}</span>
+              </div>
+              <div class="mint-cell-value is-link"><span class=""></span></div>
+            </div>
+            <div class="mint-cell-right"></div> <i class="mint-cell-allow-right"></i>
+          </div>
+
+          <!--</router-link>-->
+			  </div>
+        <div style="height: 32px;line-height: 32px;text-align: center" v-if='list.length>10 && allLoaded'>已加载到底部</div>
+      <!--</mt-loadmore>-->
+      <!--<div class="noresult-wrap" v-else>-->
+        <!--<img class="noresult-img" src="../../../../static/nofwjl.png">-->
+      <!--</div>-->
+
+		</div>
+
+	</div>
+</template>
+
+<script>
+	import AppHeader from "@/components/HeaderComponent";
+	import { State,httpGetMethod,httpWebservice } from "../../../utils/api.js";
+  import { Tool } from "../../../utils/tool.js"; //添加公共组件
+
+	export default {
+		name: 'CxjgComponent',
+		data: function() {
+			return {
+				pageh: {
+					height: State().pageh
+				},
+        pagesh: {
+          "min-height": State().pageh
+        },
+        list:[
+          {
+            ShortDescription:1,
+            OrderNo:1,
+            SubmitDate:'2017-10-10',
+            OrderState:'2018-01-01'
+          }
+        ],
+        noresult: false,
+        allLoaded: false,
+        pageIndex:1,
+        PageSize: 10
+			}
+		},
+		components: {
+			AppHeader
+		},
+		methods: {
+//      loadTop: function() {
+//        let self = this;
+//        this.pageIndex = 1;
+//        this.getdata(function(lt) {
+//          self.list = [];
+//          lt.forEach(function(item) {
+//            item.path = "/fwxq/" + item.OrderNo;
+//            self.list.push(item);
+//          });
+//          self.allLoaded = false;
+//          self.$refs.loadmore.onTopLoaded();
+//          if(lt.length < self.PageSize) {
+//            self.allLoaded = true;
+//          }
+//        }, true);
+//      },
+//      loadBottom: function() {
+//        let self = this;
+//        this.pageIndex++;
+//        this.getdata(function(lt) {
+//          self.$refs.loadmore.onBottomLoaded();
+//          if(lt.length < self.PageSize) {
+//            self.allLoaded = true;
+//          }
+//        }, true);
+//      },
+//      getdata: function(fun, isshowload) {
+//        let self = this;
+//
+//        httpWebservice("QueryServiceOrder",{
+//          "key":"0okm9ijn8uhb7ygv6tfc5rdx",
+//          "token":window.Identity_Token,
+//          "orderNo":self.orderNo,
+//          "shortdescription":self.shortdescription,
+//          "startDate":self.startDate,
+//          "endDate":self.endDate,
+//          "pageIndex":self.pageIndex
+//        },false,function(result){
+//          if(result.ResultState == "E") {
+//            Tool.alert(result.ResultMessage,'','',function () {
+//              self.$router.go(-1);
+//            });
+//          }
+//          else {
+//            if(!result.OrderSeachResultList || !result.OrderSeachResultList.length) {
+//              if(self.pageIndex == 1) self.noresult = true;
+//              return;
+//            }
+//            result.OrderSeachResultList.forEach(function(item) {
+//              item.path = "/fwxq/" + item.OrderNo + '/' + result.UserCode;
+//              self.list.push(item);
+//            });
+//
+//            if(fun) {
+//              fun(result.OrderSeachResultList)
+//            }
+//          }
+//        }, function() {}, isshowload);
+//      }
+    },
+    mounted: function () {
+      this.orderNo = this.$route.params.orderNo;
+      this.shortdescription = this.$route.params.shortdescription;
+      this.startDate = this.$route.params.startDate;
+      this.endDate = this.$route.params.endDate;
+      this.pageh.height = this.$route.params.pagehight;
+      let self = this;
+      if(this.orderNo == ' ') {
+        this.orderNo ='';
+      }
+      if(this.shortdescription == ' ') {
+        this.shortdescription ='';
+      }
+//      this.getdata(function(lt){
+//        if(lt.length < self.PageSize) {
+//          self.allLoaded = true;
+//        }
+//      });
+    }
+	}
+</script>
+<style type="text/css">
+
+  .mint-loadmore-bottom {
+    display: none;
+  }
+
+	.cxjg-main {
+    overflow-y: auto;
+		text-align: left;
+    background: #f5f5f5;
+	}
+
+	.cxjg-main .mint-cell-wrapper {
+		padding: 10px;
+		background-size: 0px;
+	}
+  .cxjg-main .noresult-wrap {
+    margin: 0 auto;
+    padding-top: 160px;
+    width: 160px;
+    height: 200px;
+  }
+  .cxjg-main .noresult-wrap .noresult-img {
+    width: 100%;
+  }
+
+  .cxjg-main .cxjg-num {
+    color: #4594ed;
+  }
+
+  .cxjg-main .cxjg-des {
+    font-weight: bold;
+  }
+</style>

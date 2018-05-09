@@ -1,0 +1,104 @@
+<template>
+
+	<div>
+
+		<app-header title="服务查询"></app-header>
+
+		<div class="fwcx-main">
+
+			<div class="fwcx-item">
+				<mt-field label="服务单号" placeholder="请输入服务单号" v-model="applictionId"></mt-field>
+			</div>
+			<div class="fwcx-item">
+				<mt-field label="描述" placeholder="请输入相关描述" v-model="describe"></mt-field>
+			</div>
+			<div class="fwcx-item" @click="startTimeOpen">
+				<mt-field readonly disabled label="提报开始时间" placeholder="请选择开始时间" :value="startTime | formatDate">
+					<span class="fwcx-date"></span>
+				</mt-field>
+			</div>
+			<div class="fwcx-item" @click="entTimeOpen">
+				<mt-field readonly disabled label="提报结束时间" placeholder="请选择结束时间" :value="endTime | formatDate">
+					<span class="fwcx-date"></span>
+				</mt-field>
+			</div>
+			
+			<div  class="fwcx-item fwcx-search" @click="search">
+				<mt-button type="primary" size="large">查询</mt-button>
+			</div>
+			
+			<mt-datetime-picker ref="pickerstart" type="date" v-model="startTime">
+			</mt-datetime-picker>
+
+			<mt-datetime-picker ref="pickerend" type="date" v-model="endTime">
+			</mt-datetime-picker>
+				
+		</div>
+
+	</div>
+</template>
+
+<script>
+	import AppHeader from "@/components/HeaderComponent";
+
+	import { DatetimePicker } from 'mint-ui';
+	import { Tool } from "../utils/tool.js";
+	import { Field } from 'mint-ui';
+	import { Buttons } from 'mint-ui';
+	
+	export default {
+		name: 'FwcxComponent',
+		data: function() {
+			return {
+				applictionId: "",
+				describe: "",
+				startTime: new Date(),
+				endTime: new Date()
+			}
+		},
+		components: {
+			AppHeader,
+			Field,
+			DatetimePicker,
+			Buttons
+		},
+		methods: {
+			startTimeOpen: function() {
+				this.$refs.pickerstart.open();
+			},
+			entTimeOpen: function() {
+				this.$refs.pickerend.open();
+			},
+			search:function(){
+				this.$router.push("/cxjg");
+			}
+		},
+		filters: {
+			formatDate(time) {
+				let date = new Date(time)
+				return Tool.formate(date, 'yyyy-MM-dd')
+			}
+		}
+	}
+</script>
+<style type="text/css">
+	.fwcx-main {}
+	
+	.fwcx-item .mint-cell-wrapper {
+		background-size: 0;
+		text-align: left;
+	}
+	 .fwcx-search{	 	
+	 	margin: 50px 10px 0;
+	 }
+	 .fwcx-date{
+	 	background: url(../../static/time.png) no-repeat center;
+		background-size: contain;
+		display: block;
+		width: 20px;
+		height: 20px;
+	 }
+	 input:disabled{
+	 	background:#fff;
+	 }
+</style>

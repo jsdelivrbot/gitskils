@@ -1,0 +1,439 @@
+<template>
+  <div id="homecomponent">
+      <mt-header fixed title="员工自助">
+      <a href="http://www.sunboxsoftdp.com.cn" slot="left">
+        <mt-button icon="back">返回</mt-button>
+      </a>
+<!--       <mt-button icon="more" slot="right"></mt-button>
+ -->    </mt-header>
+    <div >
+
+    </div>
+    <mt-swipe :auto="4000" class="banner">
+      <mt-swipe-item><img src="../assets/s_01.jpg" alt=""></mt-swipe-item>
+      <mt-swipe-item><img src="../assets/banner2.png" alt=""></mt-swipe-item>
+      <mt-swipe-item><img src="../assets/banner1.png" alt=""></mt-swipe-item>
+    </mt-swipe>
+    <div class="topLine">
+      <span>头条</span>
+      <span @click="Xwzxtt(XwzxData.path)">{{XwzxData.title}}</span>
+      <router-link to="/xwzx" slot="left">
+        <span>更多...</span>
+      </router-link>
+    </div>
+    <div v-for="item in items" v-if="!item.fatherShow">
+      <div class="xxcx" @click="click(item)">
+        <span>{{item.title}}</span>
+        <span class="fa fa-angle-down fa-lg"  v-if="!item.expend&&item.total>4"></span>
+        <span class="fa fa-angle-up fa-lg" v-if="item.expend&&item.total>4"></span>
+      </div>
+      <div class="gjl">
+        <li v-for="(it,index) in item.list" v-if="it.show">
+          <div v-if="!item.expend">
+            <span v-if="index<=item.idxlen">
+        	    <router-link v-bind:to="it.id" v-if="it.id != '/gltb'">
+        		    <img v-bind:src='it.thumpath' alt="">
+          	      {{it.name}}
+              </router-link>
+              <a v-if="it.id == '/gltb'" @click="gltbUrl()">
+                <img v-bind:src='it.thumpath' alt="">
+                {{it.name}}
+              </a>
+            </span>
+          </div>
+
+          <div v-if="item.expend">
+            <span>
+        	    <router-link v-bind:to="it.id" v-if="it.id != '/gltb'">
+        		    <img v-bind:src='it.thumpath' alt="">
+          	      {{it.name}}
+        	    </router-link>
+              <a v-if="it.id == '/gltb'" @click="gltbUrl()">
+                <img v-bind:src='it.thumpath' alt="">
+                  {{it.name}}
+              </a>
+              </span>
+          </div>
+
+        </li>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script type="text/javascript">
+  import { httpGetMethod,httpGetgltbUrl } from "../utils/api.js"; //添加公共组件
+  import { loginStatisticalAnalysis } from "../utils/base.js"; //统计分析
+  import { Tool } from "../utils/tool.js"; //添加公共组件
+  import { Swipe, SwipeItem } from 'mint-ui';
+  export default {
+    name: 'homecomponent',
+    data () {
+      return {
+        XwzxList: [],
+        XwzxData: {},
+        items : [
+          {
+            id:0,
+            title: '信息查询',
+            expend:false,
+            idxlen: 3,
+            total:5,
+            list: [
+              {
+                id:"/grxx",
+                name:'个人信息',
+                thumpath:'../static/grxx.png',
+                show: true
+              },
+              {
+                id:"/xcxx",
+                name:'薪酬信息',
+                thumpath:'../static/xcxx.png',
+                show: true
+              },
+              {
+                id:"/bxxx",
+                name:'报销信息',
+                thumpath:'../static/bxxx-1.png',
+                show: true
+              },
+              {
+                id:"/fwcx",
+                name:'IT查询',
+                thumpath:'../static/rdwd.png',
+                show: true
+              },
+              {
+                id:"/qynj",
+                name:'企业年金',
+                thumpath:'../static/qynj.png',
+                show: true
+              },
+              {
+                id:"/grjx",
+                name:'个人绩效',
+                thumpath:'../static/grjx-2.png',
+                show: true
+              },
+              {
+                id:"/dzkq",
+                name:'电子考勤',
+                thumpath:'../static/dzkq.png',
+                show: true
+              }
+            ]
+          },
+          {
+            id:1,
+            title: '业务办理',
+            expend:false,
+            idxlen: 3,
+            total:4,
+            list: [
+              {
+                id:"/zmsq",
+                name:'证明申请',
+                thumpath:'../static/zmsq.png',
+                show: true
+              },
+              {
+                id:"/xxxg",
+                name:'信息修改',
+                thumpath:'../static/xxxg.png',
+                show: true
+              },
+              {
+                id:"/itsq",
+                name:'IT申请',
+                thumpath:'../static/ITsq.png',
+                show: true
+              },
+//              {
+//                id:"/xjbxd",
+//                name:'报销申请',
+//                thumpath:'../static/bxxx.png',
+//                show: true
+//              },
+              {
+                id:"/jqqd",
+                name:'请销假',
+                thumpath:'../static/qxj.png',
+                show: true
+              }
+            ]
+          },
+          {
+            id:2,
+            title: '政策查询',
+            expend:false,
+            idxlen: 4,
+            total:5,
+            list: [
+              {
+                id:"/zchx",
+                name:'政策指南',
+                thumpath:'../static/zczn.png',
+                show: true
+              },
+              {
+                id:"/wyzx",
+                name:'我要提问',
+                thumpath:'../static/wyzx.png',
+                show: true
+              },
+              {
+                id:"/jyfx",
+                name:'经验分享',
+                thumpath:'../static/jyfx.png',
+                show: false
+              },
+              {
+                id:"/xcs",
+                name:'小常识',
+                thumpath:'../static/xcs.png',
+                show: true
+              },
+              {
+                id:"/jqqd",
+                name:'问卷统计',
+                thumpath:'../static/dcwj.png',
+                show: true
+              },
+//              {
+//                id:"/jqqd",
+//                name:'员工必读',
+//                thumpath:'../static/ygbd.png',
+//                show: true
+//              }
+            ]
+          },
+          {
+            id:3,
+            title: '管理支持',
+            fatherShow:true,
+            expend:false,
+            idxlen: 6,
+            total:3,
+            list: [
+              {
+                id:"/gltb",
+                name:'管理图表',
+                thumpath:'../static/gltb.png',
+                show: false
+              },
+              {
+                id:"/txl",
+                name:'通讯录',
+                thumpath:'../static/txl.png',
+                show: false
+              },
+              {
+                id:"/zjdf",
+                name:'专家答复',
+                thumpath:'../static/zjdf.png',
+                show: false
+              },
+//              {
+//                id:"/jqqd",
+//                name:'团队成员',
+//                thumpath:'../static/tdcy.png',
+//                show: false
+//              }
+            ]
+          }
+        ]
+      }
+    },
+    methods: {
+      gltbUrl() {
+        httpGetgltbUrl();
+      },
+      click : function (item) {
+        item.expend =  !item.expend;
+      },
+      getXwzxdata: function (isshowload) {
+        let self = this;
+        httpGetMethod("hrs-ess/app/getNoticeList.action?", {
+          RowNum: 0,
+          PageSize: 1
+        },function(result) {
+          result.data.forEach(function(item) {
+            item.path = "/ylbxdetail/40/" + item.noticeCode;
+            self.XwzxList.push(item);
+          });
+
+          self.XwzxData = self.XwzxList[0];
+        }, function() {}, isshowload);
+      },
+      Xwzxtt: function(path) {
+        window.location.href = "#" + path;
+      },
+      authority: function () {
+        let self = this;
+        httpGetMethod("hrs-ess/app/HRShareList.action?", {},function(msg) {
+          if (msg.success == true) {
+            let data = msg.data;
+            if (data != "" && data.length) {
+              if(data.indexOf("HR_SHARE") != -1){//经验分享
+                self.items[2].list[2].show = true;
+                self.items[2].idxlen -= 1;
+              }
+              if(data.indexOf("HR_BOOK") != -1){//通讯录
+                self.items[3].list[1].show = true;
+                self.items[3].idxlen -= 1;
+                self.items[3].fatherShow = false;
+              }
+              if(data.indexOf("HR_EXPERT") != -1){//专家答复
+                self.items[3].list[2].show = true;
+                self.items[3].idxlen -= 1;
+                self.items[3].fatherShow = false;
+              }
+            }
+          }
+        }, function() {}, false);
+      },
+      getChartRole: function () {
+        let self = this;
+        httpGetMethod("hrs-ess/app/getChartRole.action?", {},function(msg) {
+          if (msg.success == true) {
+            self.items[3].list[0].show = true;
+            self.items[3].idxlen -= 1;
+            self.items[3].fatherShow = false;
+          }
+        }, function() {}, false);
+      },
+      indetify:function () {
+        this.items.forEach(function (item,index) {
+          var a = 0;
+          item.list.forEach(function (it) {
+            if(it.show) {
+              a++;
+            }
+          })
+          item.total = a;
+        })
+      }
+    },
+    mounted: function() {
+      loginStatisticalAnalysis();
+      this.getXwzxdata(false);
+      this.authority();
+      this.getChartRole();
+      let self = this;
+      setTimeout(function(){
+        self.indetify();
+      }, 400);
+    }
+  }
+</script>
+
+<style>
+
+  #homecomponent {
+    font-size: 12px;
+  }
+
+  .banner img {
+    width: 100%;
+    height: 125px;
+    /*background: url('../assets/banner1.png') no-repeat fixed center;*/
+  }
+  .banner .mint-swipe-items-wrap {
+    height: 125px;
+  }
+  .topLine {
+    width: 100%;
+    height:35px;
+    background: white;
+    margin-top: -4px;
+    border-bottom: 1px solid #f6f6f6;
+    line-height: 20px;
+  }
+  .topLine span{
+    float: left;
+    margin-top: 9px;
+  }
+  .topLine > span:nth-child(1) {
+    display: inline-block;
+    width: 40px;
+    height:22px;
+    background: #ed1d1d;
+    color: white;
+    border-radius: 3px;
+    margin-left:9px;
+    text-align: center;
+    line-height: 22px;
+    margin-top: 7px;
+  }
+  .topLine > span:nth-child(2) {
+    width: 65%;
+    text-align: left;
+    color: #9a9a9a;
+    margin-left: 10px;
+    overflow: hidden;
+    display: -webkit-box;
+    text-overflow: ellipsis;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+  }
+  .topLine > a > span {
+    float: right;
+    margin-right: 9px;
+  }
+  .xxcx {
+    width: 100%;
+    height:36px;
+    margin-top: 10px;
+    text-align: center;
+    line-height: 20px;
+    position: relative;
+    background: #fcfcfc;
+    border-top: 2px solid #e9e9e9;
+  }
+  .xxcx span:nth-child(1) {
+    width: 60px;
+    height:20px;
+    margin-top: 8px;
+    float: left;
+    display: inline-block;
+    margin-left: 10px;
+    color: #505050;
+    font-size: 14px;
+  }
+  .xxcx span:nth-child(2) {
+    float: right;
+    height:20px;
+    line-height: 20px;
+    margin-top: 8px;
+    margin-right: 10px;
+    color: #505050;
+  }
+  .gjl {
+    width: 100%;
+  	overflow:hidden;
+    background: white;
+    border-top: 2px solid #f3f3f3;
+    border-bottom: 2px solid #ededed;
+  }
+  .gjl li {
+    float: left;
+    width: 25%;
+    list-style: none;
+    padding-bottom: 5px;
+  }
+  .gjl li span {
+    display: inline-block;
+    width: 50px;
+    height: 60px;
+    margin-top: 7px;
+  }
+  .gjl li a {
+  	color:#505050;
+    text-decoration: none;
+  }
+  .gjl li img {
+    width: 40px;
+  }
+</style>
+

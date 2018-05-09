@@ -1,0 +1,620 @@
+<template>
+
+	<div>
+	    <app-header title="薪酬信息"></app-header>
+		
+		<!--密码登录框-->
+        <div v-if="flag==1" >
+	        <div class="mint-msgbox">
+			    <div class="mint-msgbox-header">
+			        <div class="mint-msgbox-title">请输入密码</div>
+			    </div>
+			    <div class="mint-msgbox-content">
+			        <div class="mint-msgbox-message">
+			            <div class="password-prompt">
+			                <label>
+			                    <input style="width:100%;" id="_pas" v-model="passwordIn" type="password">
+			                </label>
+			            </div>
+			        </div>
+			    </div>
+			    <div class="mint-msgbox-btns">
+			        <button class="mint-msgbox-btn mint-msgbox-confirm" @click="loginPasswordFun()" style="background:#10a5e7;color: white">确定</button>
+         			<button class="mint-msgbox-btn" @click="flag=2" style="background:#83a3bb;color: white">找回密码</button>
+			    </div>
+	       </div>
+        </div>
+		
+		<!--设置密码框-->
+		 <div v-if="flag==4" >
+	        <div class="mint-msgbox">
+			    <div class="mint-msgbox-header">
+			        <div class="mint-msgbox-title">请设置密码</div>
+			    </div>
+			    <div class="mint-msgbox-content">
+			        <div class="mint-msgbox-message">
+			            <div class="password-prompt">
+			                <label>
+			                	<span>设置密码</span>
+			                    <input v-model="passwordSet" type="password">
+			                </label>
+			                <label>
+			                	<span>确认密码</span>
+			                    <input v-model="passwordConfirm" type="password">
+			                </label>
+			            </div>
+			        </div>
+			    </div>
+			    <div class="mint-msgbox-btns">
+			        <button class="mint-msgbox-btn mint-msgbox-confirm" @click="setPasswordFun()" style="background:#10a5e7;color: white">确定</button>
+        			
+			    </div>
+	       </div>
+        </div>
+		
+		<!--找回密码框-->
+        <div v-if="flag==2">
+        	<div class="mint-msgbox msgbox-bounce-leave-to" >
+			    <div class="mint-msgbox-header">
+			        <div class="mint-msgbox-title">找回密码</div>
+			    </div>
+			    <div class="mint-msgbox-content">
+			        <div class="mint-msgbox-message">
+			            <div class="password-prompt">
+			                <label>
+			                	<span>验证码</span>
+			                    <input id="verfiy" style="width:40%;" v-model="identifyCode" type="text">
+			                    <button v-show="!settimesout" @click="getIdentifyCode">获取验证码</button>
+			                    <button v-show="settimesout">{{settimesout}}秒</button>
+			                </label>
+			                <label>
+			                	<span>设置密码</span>
+			                    <input id="_fsetpas" v-model="passwordSet" type="password">
+			                </label>
+			                <label>
+			                	<span>确认密码</span>
+			                    <input id="_fconfirpas" v-model="passwordConfirm" type="password">
+			                </label>
+			            </div>
+			        </div>
+			    </div>
+			    <div class="mint-msgbox-btns">
+			        <button class="mint-msgbox-btn" @click="flag=1" style="background:#83a3bb;color: white">取消</button>
+			        <button class="mint-msgbox-btn mint-msgbox-commit" @click="findPasswordFun" style="background:#10a5e7;color: white">提交</button>
+			    </div>
+        	</div>
+		</div>
+		<div class="xcxx-main" v-if="flag==3">
+			<mt-header class='qynj-title' :title="currentmonth">
+				<div @click="premonth" class="qynj-privousyear" slot="left"><span class="fa fa-angle-left"></span>&nbsp;上月</div>
+				<div v-if='isnext' @click="nextmonth" class="qynj-nextyear" slot="right">下月&nbsp;<span class="fa fa-angle-right"></span></div>
+			</mt-header>
+			<div class="top">
+				<div class="top-content">
+					<div class="top-m">
+						<div class="top-m-t">应发金额</div>
+						<div class="top-m-m"><span v-if='isycje'>{{currentdata[0].total}}</span><span v-if="!isycje">****</span> &nbsp<span class="top-m-zt">元</span></div>
+						<div v-on:click="ycje" class="top-m-b"><span >隐藏金额</span></div>
+					</div>
+				</div>
+			</div>
+			<div class="contents">
+					<div v-for='opt in currentdata'>
+						<div class="contents-item">
+							<div class=""><span>{{opt.title}}</span></div>
+							<div v-on:click="ycit(opt)" class="contents-item-right">{{opt.total}} <span class="" :class="opt.isshow?'fa fa-angle-up':'fa fa-angle-down'"></span></div>
+						</div>
+						<div class="contents-b" v-if='opt.isshow'>
+							<div  v-for='item in opt.data' class="contents-item contents-b-item"><span>{{item.combItemName}}</span><span>{{item.amountString}}</span></div>
+						</div>
+					</div>
+			  
+			</div>
+		</div>
+	</div>
+
+</template>
+
+<script>
+	import { Lazyload } from 'mint-ui';
+	import AppHeader from "@/components/HeaderComponent";
+	import { State } from "../utils/api.js";
+	import { Headers } from 'mint-ui';
+	import { httpGetMethod } from "../utils/api.js"; //添加公共组件
+	import { Tool } from "../utils/tool.js"; //添加公共组件
+	import { Buttons } from 'mint-ui';
+	import { genkey } from '../utils/des.js';
+	import { des } from '../utils/des.js';
+
+	export default {
+		name: 'XcxxComponent',
+		data: function() {
+			return {
+				flag:0,
+				isnext:false,
+				isycje:localStorage.getItem("gxfy_ycje")?((localStorage.getItem("gxfy_ycje") == "1") ? false : true ):true,
+				currentmonth: Tool.formate(new Date(),"yyyy/MM"),
+				currentdata:[
+					{
+						title:'应发工资',
+						titleId:'yfWageMap',
+						data:[],
+						total:"",
+						isshow:false
+					},
+					{
+						title:'实发工资',
+						titleId:'sfWageMap',
+						data:[],
+						total:"",
+						isshow:false
+					},
+					{
+						title:'社会保险公积金及其他',
+						titleId:'bxWageMap',
+						data:[],
+						total:"",
+						isshow:false
+					},
+				],				
+				passwordIn:"",//输入密码
+				identifyCode:"",//验证码
+				settimesout:0,//60秒内不能再次获取验证码
+				passwordSet:"",//设置密码
+				passwordConfirm:"",//确认密码				
+			}
+		},
+		components: {
+			AppHeader,
+			Headers,
+			Buttons
+		},
+		methods: {
+			ycit: function(opt) {
+				opt.isshow = !opt.isshow;
+			},
+			premonth: function() {
+				this.isnext = true;
+
+				let y = this.currentmonth.split("/")[0];
+				let m = this.currentmonth.split("/")[1] - 1;
+				
+				this.currentmonth = Tool.formate(new Date(y,m-1),"yyyy/MM");
+				this.getInfo();
+			},
+			nextmonth: function() {
+				let y = this.currentmonth.split("/")[0];
+				let m = this.currentmonth.split("/")[1] - 1;
+				
+				this.currentmonth = Tool.formate(new Date(y,m+1),"yyyy/MM");
+				this.getInfo();
+				if(this.currentmonth == Tool.formate(new Date(),"yyyy/MM")){
+					this.isnext = false;
+				}
+			},
+			ycje: function() {
+				/*
+				 隐藏金额 说明，
+				 gxfy_ycje ， 如果是1 为隐藏 如果是2 为显示，如果获取不到值默认显示
+				 * */
+
+				this.isycje = !this.isycje;
+				var ycjestr = this.isycje ? "2" : "1";
+				localStorage.setItem("gxfy_ycje",ycjestr)
+			},
+			getInfo: function() {
+				let self = this;
+				let currentDate = self.currentmonth.split("/")[0] + self.currentmonth.split("/")[1];
+				httpGetMethod("hrs-ess/app/seachWageInfo.action?", {
+					"yearMonth":currentDate
+				}, function(result) {
+					if(result.success){
+					
+						let _result = result.data;
+						self.currentdata.forEach(function(item){
+							item.data = _result[item.titleId]['data'];
+							item.total = _result[item.titleId]['total'];
+						});
+					}else{
+						Tool.alert(result.msg || "验证失败");
+					}
+				});
+			},
+			//登录
+			loginPasswordFun:function(){
+				let self = this;
+				if(!self.passwordIn){
+					Tool.alert("密码不能为空!");
+					return;
+				}
+		        let genKey = genkey('0okm9ijn8uhb7ygv6tfc5rdx', 0, 24); //加密用的
+		        //处理密码验证事件,验证通过后设置密码为空
+			 	let enPassword = btoa(des(genKey.key, self.passwordIn, 1, 1, 'sin0opec', 1));
+				httpGetMethod("hrs-ess/app/checkWagePassword.action", {
+					"password": enPassword
+				}, function(result) {
+					if(result.success) {
+						self.flag=3;
+						self.getInfo();
+					} else {
+						Tool.alert(result.msg || "密码错误");
+					}
+				});
+			},
+			//获取验证码
+			getIdentifyCode:function() {
+				let self = this;
+				this.settimesout = 60;//时长控制
+				let times = setInterval(function(){
+			        if(self.settimesout>0){
+						self.settimesout--;
+					}else{
+						clearInterval(times);
+					}
+			    },1000);
+				httpGetMethod("hrs-ess/app/sendValidateCode.action", {}, function(result) {
+					if(result.success) {
+						Tool.alert("验证码已发送");
+					} else {
+						Tool.alert("验证码发送失败");
+					}
+				});
+			},
+			//找回密码
+			findPasswordFun:function(){
+				let self = this;
+				if(!self.identifyCode){
+					Tool.alert("请输入验证码");
+			 		return;
+				}
+			 	if(self.identifyCode.match(/\D/g)){
+			 		Tool.alert("请输入数字");
+			 		return;
+			 	}
+				if(self.passwordSet.length < 6) {
+					Tool.alert("密码不得少于6位");
+					return;
+				}
+				if(self.passwordSet != self.passwordConfirm) {
+					Tool.alert("两次密码输入不一致");
+					return;
+				}
+				let genKey = genkey('0okm9ijn8uhb7ygv6tfc5rdx', 0, 24); //加密用的
+		        //处理密码验证事件,验证通过后设置密码为空
+			 	let enPassword = btoa(des(genKey.key, self.passwordSet, 1, 1, 'sin0opec', 1));
+				httpGetMethod("hrs-ess/app/updateWagePassword.action", {
+					"password": enPassword
+				}, function(result) {
+					if(result.success) {
+						Tool.alert(result.msg || "找回成功");
+						self.flag = 3;
+						self.getInfo();
+					} else {
+						Tool.alert(result.msg || "找回失败");
+					}
+				});
+			},
+			//设置密码
+			setPasswordFun:function(){
+				let self = this;
+				
+				if(self.passwordSet.length < 6) {
+					Tool.alert("密码不得少于6位");
+					return;
+				}
+				if(self.passwordSet != self.passwordConfirm) {
+					Tool.alert("两次密码输入不一致");
+					return;
+				}
+				let genKey = genkey('0okm9ijn8uhb7ygv6tfc5rdx', 0, 24); //加密用的
+		        //处理密码验证事件,验证通过后设置密码为空
+			 	let enPassword = btoa(des(genKey.key, self.passwordSet, 1, 1, 'sin0opec', 1));
+			 	
+			 	//调密码设置的接口
+
+				httpGetMethod("hrs-ess/app/addWagePassword.action", {
+					"password": enPassword
+				}, function(result) {
+					if(result.success) {
+						self.getInfo();
+						self.flag = 3;
+					} else {
+						Tool.alert(result.msg || "密码设置失败");
+					}
+				});
+
+			}
+		},
+		mounted: function() {
+			 /**********************************************
+		       逻辑流程：
+		       1、验证用户是否设置过密码
+		           如果有，则显示密码验证框，设置密码成功，跳转到密码验证页面
+		           如果无，则显示设置密码框
+		       2、密码验证时 -》 查找密码
+		           密码验证成功，则直接进入页面
+		       3、查找密码 - 》点击取消，跳转到密码验证页面
+		           查找密码成功，直接进入界面
+		    **********************************************/
+		   
+		   let self = this;
+			
+			var genKey = genkey('0okm9ijn8uhb7ygv6tfc5rdx', 0, 24); //加密用的
+
+			httpGetMethod("hrs-ess/app/validateHasPassword.action", {}, function(result) {
+				if(result.success) {
+					//跳转密码登陆框						
+					self.flag = 1;
+				} else {					
+					//跳转设置密码框					
+					self.flag =4;
+				}
+				//找回密码框	
+
+			});
+		   
+		   
+		 },
+	 }
+</script>
+
+<style type="text/css">
+
+	.qynj-title {
+		background-color: #3a71dc !important;
+		font-size: 16px;
+	}
+
+	.qynj-title span {
+		font-size: 18px;
+		line-height: 10px;
+	}
+
+	.qynj-privousyear,
+	.qynj-nextyear {
+		font-size: 12px;
+		align-items: center;
+		display: flex;
+	}
+
+	.qynj-privousyear {
+		justify-content: flex-start;
+	}
+
+	.qynj-nextyear {
+		justify-content: flex-end;
+	}
+
+	.top {
+		background: #3A71DC;
+		display: -webkit-box;
+		overflow: hidden;
+		padding: 10px;
+		padding-top: 0px;
+	}
+
+	.top-content {
+		width: 100%;
+		display: -webkit-box;
+		overflow-x: scroll;
+		-webkit-overflow-scrolling: touch;
+	}
+	/*隐藏滚动条*/
+
+	::-webkit-scrollbar {
+		display: none;
+		/*隐藏滚轮*/
+	}
+
+	.top-m {
+		width: 80%;
+		height: 125px;
+		background: #ffffff;
+		-webkit-border-radius: 8px;
+		/*margin-right: 10px;*/
+		margin: 0 10%;
+	}
+
+	.top-m-t {
+		height: 30px;
+		line-height: 30px;
+		background: #D2E2FC;
+		color: #505050;
+		font-weight: 900;
+		-webkit-border-radius: 8px 8px 0 0;
+	}
+
+	.top-m-m {
+		height: 70px;
+		line-height: 70px;
+		font-size: 26px;
+		font-weight: 500;
+	}
+
+	.top-m-zt {
+		font-size: 12px;
+	}
+
+	.top-m-b {
+		color: #3a71dc;
+		font-size: 8px;
+	}
+	/*页面重新绘制*/
+
+	.contents-item,.footer-item {
+		font-size: 14px;
+		color: #282828;
+		display: flex;
+		/*弹性盒子*/
+		align-items: center;
+		justify-content: space-between;
+		/*弹性项目平均分布在该行上*/
+		padding: 14px 20px;
+		border-bottom: 1px solid #ecf0fd;
+		background: #fff;
+		padding-right: 10px;
+	}
+
+	 .cirle{
+    	float: left;
+    	width: 2px;
+    	height: 2px;
+    	margin-top:8px;
+    	margin-right: 10px;
+    	background:#497DDF;
+
+    }
+
+	.footer-item{
+		font-size: 10px;
+		justify-content: space-between;
+	}
+
+	.contents-item-bold {
+		font-weight: bold;
+		padding-right: 0px;
+	}
+
+	.contents-item-right,.footer-item-right {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		/*前提弹性盒子 弹性项目平均分布在该行上*/
+	}
+
+	.contents-item-right span {
+		display: inline-flex;
+		/*内弹性盒子*/
+		width: 20px;
+		height: 20px;
+		align-items: center;
+		justify-content: center;
+	}
+	.footer-item-right span{
+		display: inline-flex;
+		/*内弹性盒子*/
+		width: 20px;
+		height: 20px;
+		align-items: center;
+		justify-content: center;
+
+	}
+
+	.contents-b-item {
+		border-bottom: none;
+		background: #fafcff;
+		padding-right: 30px;
+	}
+
+	.contents-b-item span:first-of-type:before {
+		content: "";
+		display: inline-block;
+		width: 4px;
+		height: 4px;
+		background: #497ddf;
+		border-radius: 4px;
+		margin-right: 5px;
+
+	}
+	.contents-item span:first-of-type{
+		font-weight: bold;
+
+	}
+
+
+	.mint-msgbox {
+	    position: fixed;
+	    top: 50%;
+	    left: 50%;
+	    -webkit-transform: translate3d(-50%, -50%, 0);
+	    transform: translate3d(-50%, -50%, 0);
+	    background-color: #fff;
+	    width: 85%;
+	    border-radius: 3px;
+	    font-size: 16px;
+	    -webkit-user-select: none;
+	    overflow: hidden;
+	    -webkit-backface-visibility: hidden;
+	    backface-visibility: hidden;
+	    -webkit-transition: .2s;
+	    transition: .2s;
+}
+
+   .mint-msgbox-header {
+    padding: 15px 0 0;
+}
+
+   .mint-msgbox-title {
+    text-align: center;
+    padding-left: 0;
+    margin-bottom: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: #333;
+}
+
+  .mint-msgbox-content {
+    padding: 10px 20px 15px;
+    border-bottom: 1px solid #ddd;
+    min-height: 36px;
+    position: relative;
+}
+	.mint-msgbox-btns {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    height: 40px;
+    line-height: 40px;
+}
+.mint-msgbox-btns .mint-msgbox-btn {
+	font-size: 16px;
+}
+
+.mint-msgbox-confirm,.mint-msgbox-commit,.mint-msgbox-back {
+    width: 50%;
+}
+	.password-prompt {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.password-prompt label {
+		display: flex;
+		width: 100%;
+		margin-top: 10px;
+	}
+
+	.password-prompt input {
+		border: none;
+		outline: none;
+		-webkit-appearance: none;
+		height: 28px;
+		border: 1px solid #D8D8D8;
+		border-radius: 3px;
+		width: 80%;
+		text-indent: 10px;
+	}
+
+	.password-prompt span {
+		display: inline-flex;
+		font-size: 12px;
+		margin-right: 10px;
+		color: #282828;
+		width: 57px;
+	}
+
+	.password-prompt button {
+		font-size: 12px;
+		border: none;
+		outline: none;
+		-webkit-appearance: none;
+		width: 6em;
+		height: 32px;
+		border: 1px solid #D8D8D8;
+		border-radius: 3px;
+		color: #282828;
+		background: #f5f5f5;
+		padding: 0 1px;
+		margin-left: 5px;
+	}
+</style>

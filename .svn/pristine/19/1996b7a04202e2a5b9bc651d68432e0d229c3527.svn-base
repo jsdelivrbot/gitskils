@@ -1,0 +1,541 @@
+<template>
+	<div>
+		<app-header title="薪酬信息"></app-header>
+
+		<div class="xcxx-main">
+			<mt-header class='qynj-title' :title="currentmonth">
+				<div @click="premonth" class="qynj-privousyear" slot="left"><span class="fa fa-angle-left"></span>&nbsp;上月</div>
+				<div v-if='isnext' @click="nextmonth" class="qynj-nextyear" slot="right">下月&nbsp;<span class="fa fa-angle-right"></span></div>
+			</mt-header>
+			<div class="top">
+				<div class="top-content">
+					<div class="top-m">
+						<div class="top-m-t">应发金额</div>
+						<div class="top-m-m"><span v-if='isycje'>{{currentdata[0].total}}</span><span v-if="!isycje">****</span> &nbsp<span class="top-m-zt">元</span></div>
+						
+						<div v-on:click="ycje" class="top-m-b"><span >隐藏金额</span></div>
+					</div>
+
+				</div>
+			</div>
+
+			<div class="contents">
+
+					<div v-for='opt in currentdata'>
+						<div class="contents-item">
+							<div class=""><span>{{opt.title}}</span></div>
+							<div v-on:click="ycit(opt)" class="contents-item-right">{{opt.total}} <span class="" :class="opt.isshow?'fa fa-angle-up':'fa fa-angle-down'"></span></div>
+						</div>
+						<div class="contents-b" v-if='opt.isshow'>
+							<div  v-for='item in opt.data' class="contents-item contents-b-item"><span>{{item.combItemName}}</span><span>{{item.amountString}}</span></div>
+						</div>
+					</div>
+				
+			</div>
+
+			<div class="footer">
+
+				<div v-for='opo in detaildata'>
+
+						<div class="footer-item">
+							<div class=""><span class="fa fa-info-circle-o"></span><span>{{opo.title}}</span></div>
+							<div class="footer-item-right">{{opo.total}} <span ></span></div>
+						</div>
+					
+					
+				</div>
+				
+			</div>
+		</div>
+
+	</div>
+</template>
+
+<script>
+	import { Lazyload } from 'mint-ui';
+	import AppHeader from "@/components/HeaderComponent";
+	import { State } from "../utils/api.js";
+	import { Headers } from 'mint-ui';
+	import { httpGetMethod } from "../utils/api.js"; //添加公共组件
+	import { Tool } from "../utils/tool.js"; //添加公共组件
+	import { Buttons } from 'mint-ui';
+	import { genkey } from '../utils/des.js';
+	import { des } from '../utils/des.js';
+	
+	export default {
+		name: 'XcxxComponent',
+		data: function() {
+			return {
+				isnext:false,
+				isycje:localStorage.getItem("gxfy_ycje")?((localStorage.getItem("gxfy_ycje") == "1") ? false : true ):true,
+				currentmonth: Tool.formate(new Date(),"yyyy/MM"),
+				currentdata:[
+					{   
+						title:'应发工资',
+						titleId:'yfWageMap',
+						data:[],
+						total:"16,765.00",
+						isshow:false
+					},
+					{   
+						title:'实发工资',
+						titleId:'sfWageMap',
+						data:[],
+						total:"16.765.00",
+						isshow:false
+					},
+					{   
+						title:'社会保险公积金及其他',
+						titleId:'bxWageMap',
+						data:[],
+						total:"3690.00",
+						isshow:false 
+					},
+				
+				],
+				detaildata:[
+					{   
+						title:'医疗保险',
+						titleId:'ylWageMap',
+						data:[],
+						total:"123",
+						isshow:false
+					},
+					{   
+						title:'养老保险',
+						titleId:'ylWageMap',
+						data:[],
+						total:"123",
+						isshow:false
+					},
+					{   
+						title:'失业保险',
+						titleId:'syWageMap',
+						data:[],
+						total:"",
+						isshow:false
+					},
+						{   
+						title:'工商保险',
+						titleId:'gsWageMap',
+						data:[],
+						total:"",
+						isshow:false
+					},
+						{   
+						title:'住房公积金',
+						titleId:'zfgjjWageMap',
+						data:[],
+						total:"",
+						isshow:false
+					},
+				
+				],          
+
+			}
+		},
+		components: {
+			AppHeader,
+			Headers,
+			Buttons
+		},
+		methods: {
+			ycit: function(opt) {
+				opt.isshow = !opt.isshow;
+			},
+			premonth: function() {
+				this.isnext = true;
+				let y = new Date(this.currentmonth).getFullYear();
+				let m = new Date(this.currentmonth).getMonth() - 1;
+				this.currentmonth = Tool.formate(new Date(y,m),"yyyy/MM");
+				this.getInfo();
+			},
+			nextmonth: function() {
+				
+				let y = new Date(this.currentmonth).getFullYear();
+				let m = new Date(this.currentmonth).getMonth() + 1;
+				this.currentmonth = Tool.formate(new Date(y,m),"yyyy/MM");
+				this.getInfo();
+				if(this.currentmonth == Tool.formate(new Date(),"yyyy/MM")){
+					this.isnext = false;
+				}
+			},
+			ycje: function() {
+				/*
+				 隐藏金额 说明，
+				 gxfy_ycje ， 如果是1 为隐藏 如果是2 为显示，如果获取不到值默认显示
+				 * */
+				this.isycje = !this.isycje;
+				var ycjestr = this.isycje ? "2" : "1";
+				localStorage.setItem("gxfy_ycje",ycjestr)
+			},
+			getInfo: function() {
+				let self = this;
+				let currentDate = self.currentmonth.split("/")[0] + self.currentmonth.split("/")[1];
+				httpGetMethod("hrs-ess/app/seachWageInfo.action?", {
+					"yearMonth":currentDate
+				}, function(result) {
+					if(result.success){
+						
+						let _result = result.data;
+						self.currentdata.forEach(function(item){
+							item.data = _result[item.titleId]['data'];
+							item.total = _result[item.titleId]['total'];
+						});
+						
+					}else{
+						Tool.alert(result.msg || "验证失败");
+					}
+				});
+			}
+		},
+		mounted: function() {
+			
+			
+			
+			 /**********************************************
+		       逻辑流程：
+		       1、验证用户是否设置过密码
+		           如果有，则显示密码验证框，设置密码成功，跳转到密码验证页面
+		           如果无，则显示设置密码框
+		       2、密码验证时 -》 查找密码
+		           密码验证成功，则直接进入页面
+		       3、查找密码 - 》点击取消，跳转到密码验证页面
+		           查找密码成功，直接进入界面
+		    **********************************************/
+			
+			let self = this;
+			
+			var genKey = genkey('0okm9ijn8uhb7ygv6tfc5rdx', 0, 24); //加密用的
+
+			httpGetMethod("hrs-ess/app/validateHasPassword.action", {}, function(result) {
+				if(result.success) {
+					//跳转密码登陆框
+					
+                     
+					loginPasswordFun();
+				} else {
+					//跳转设置密码框
+					setPasswordFun();
+				}
+				//找回密码框	
+
+			});
+
+			//跳转密码登陆框
+			function loginPasswordFun() {
+
+				let loginPassword = '<div class="password-prompt">' +
+					'<label><input style="width:100%;" id="_pas" value=""  type="password" /></label>' +
+					'</div>';
+
+				Tool.prompt({
+					title: '请输入密码',
+					message: loginPassword,
+					showCancelButton: true,
+					confirmButtonText: '确定',
+					cancelButtonText: "找回密码",
+					closeOnClickModal: false
+				}, function() {
+					//确定事件
+					var _pas = document.getElementById("_pas").value;
+					
+					//处理密码验证事件,验证通过后设置密码为空					
+					var enPassword = btoa(des(genKey.key, _pas, 1, 1, 'sin0opec', 1));
+					checkWagePasswordFun(enPassword)
+
+				}, function() {
+					//找回密码事件
+					findPasswordFun();
+				});
+
+			}
+			
+			//验证是否成功登陆
+			function checkWagePasswordFun(enPassword) {
+				httpGetMethod("/hrs-ess/app/checkWagePassword.action", {
+					"password": enPassword
+				}, function(result) {
+
+					if(result.success) {
+						self.getInfo();
+					} else {
+						Tool.alert(result.msg || "密码错误", "", "", function() {
+							loginPasswordFun();
+						});
+					}
+
+				});
+			}
+
+			//设置密码
+			function setPasswordFun() {
+				let setPassword = '<div class="password-prompt">' +
+					'<label><span>设置密码</span> <input id="_setpas" value=""  type="password" /></label>' +
+					'<label><span>确认密码</span> <input id="_confirpas" value="" type="password" /></label>' +
+					'</div>';
+
+				Tool.prompt({
+					title: '请设置密码',
+					message: setPassword,
+					confirmButtonText: '提交',
+					closeOnClickModal: false
+				}, function(result) {
+					var _setpas = document.getElementById("_setpas").value;
+					var _confirpas = document.getElementById("_confirpas").value;
+
+					if(_setpas.length < 6) {
+						Tool.alert("密码不得少于6位", "", "", function() {
+							setPasswordFun()
+						});
+						return;
+					} else if(_setpas != _confirpas) {
+						Tool.alert("两次密码输入不一致", "", "", function() {
+							setPasswordFun()
+						});
+						return;
+					} else {
+						//调页面查询的接口
+					}
+
+				});
+			}
+
+			//找回密码
+			function findPasswordFun() {
+				function verfiy() {
+					console.log("点击事件")
+				}
+				var istimer = false;
+				let findPassword = '<div class="password-prompt">' +
+					'<label><span>验证码</span> <input  id="verfiy" style="width:40%;"  value=""  type="text" /><button onclick="javascript:  var currentTime = 60 ;var self = this;var timers = setInterval(function(){currentTime--;self.innerText = currentTime;if(currentTime == 0){clearInterval(timers);self.innerText = "获取验证码"}},1000);">获取验证码</button></label>' +
+					'<label><span>设置密码</span> <input id="_fsetpas" value=""  type="password" /></label>' +
+					'<label><span>确认密码</span> <input id="_fconfirpas" value="" type="password" /></label>' +
+					'</div>';
+
+				Tool.prompt({
+					title: '找回密码',
+					message: findPassword,
+					confirmButtonText: '提交',
+					showCancelButton: true,
+					cancelButtonText: '取消',
+					closeOnClickModal: false,
+				}, function(result) {
+
+					var _fsetpas = document.getElementById("_fsetpas").value;
+					var _fconfirpas = document.getElementById("_fconfirpas").value;
+
+					if(_fsetpas.length < 6) {
+						Tool.alert("密码不得少于6位", "", "", function() {
+							findPasswordFun()
+						});
+						return;
+					} else if(_fsetpas != _fconfirpas) {
+						Tool.alert("两次密码输入不一致", "", "", function() {
+							findPasswordFun()
+						});
+						return;
+					} else {
+						//调页面查询的接口
+					}
+
+				}, function() {
+					loginPasswordFun();
+				});
+
+			}
+
+		},
+	}
+</script>
+
+<style type="text/css">
+
+
+	.qynj-title {
+		background-color: #3a71dc !important;
+		font-size: 16px;
+	}
+	
+	.qynj-title span {
+		font-size: 18px;
+		line-height: 10px;
+	}
+	
+	.qynj-privousyear,
+	.qynj-nextyear {
+		font-size: 12px;
+		align-items: center;
+		display: flex;
+	}
+	
+	.qynj-privousyear {
+		justify-content: flex-start;
+	}
+	
+	.qynj-nextyear {
+		justify-content: flex-end;
+	}
+	
+	.top {
+		background: #3A71DC;
+		display: -webkit-box;
+		overflow: hidden;
+		padding: 10px;
+		padding-top: 0px;
+	}
+	
+	.top-content {
+		width: 100%;
+		display: -webkit-box;
+		overflow-x: scroll;
+		-webkit-overflow-scrolling: touch;
+	}
+	/*隐藏滚动条*/
+	
+	::-webkit-scrollbar {
+		display: none;
+		/*隐藏滚轮*/
+	}
+	
+	.top-m {
+		width: 80%;
+		height: 125px;
+		background: #ffffff;
+		-webkit-border-radius: 8px;
+		/*margin-right: 10px;*/
+		margin: 0 10%;
+	}
+	
+	.top-m-t {
+		height: 30px;
+		line-height: 30px;
+		background: #D2E2FC;
+		color: #505050;
+		font-weight: 900;
+		-webkit-border-radius: 8px 8px 0 0;
+	}
+	
+	.top-m-m {
+		height: 70px;
+		line-height: 70px;
+		font-size: 26px;
+		font-weight: 500;
+	}
+	
+	.top-m-zt {
+		font-size: 12px;
+	}
+	
+	.top-m-b {
+		color: #3a71dc;
+		font-size: 8px;
+	}
+	/*页面重新绘制*/
+	
+	.contents-item,.footer-item {
+		font-size: 14px;
+		color: #282828;
+		display: flex;
+		/*弹性盒子*/
+		align-items: center;
+		justify-content: space-between;
+		/*弹性项目平均分布在该行上*/
+		padding: 14px 20px;
+		border-bottom: 1px solid #ecf0fd;
+		background: #fff;
+		padding-right: 10px;
+	}
+	.footer-item{
+		font-size: 10px;
+	}
+	
+	.contents-item-bold {
+		font-weight: bold;
+		padding-right: 0px;
+	}
+	
+	.contents-item-right,.footer-item-right {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		/*前提弹性盒子 弹性项目平均分布在该行上*/
+	}
+	
+	.contents-item-right span {
+		display: inline-flex;
+		/*内弹性盒子*/
+		width: 20px;
+		height: 20px;
+		align-items: center;
+		justify-content: center;
+	}
+	.footer-item-right span{
+		display: inline-flex;
+		/*内弹性盒子*/
+		width: 20px;
+		height: 20px;
+		align-items: center;
+		justify-content: center;
+
+	}
+	
+	.contents-b-item {
+		border-bottom: none;
+		background: #fafcff;
+		padding-right: 30px;
+	}
+	
+	.contents-b-item span:first-of-type:before {
+		content: "";
+		display: inline-block;
+		width: 4px;
+		height: 4px;
+		background: #497ddf;
+		border-radius: 4px;
+		margin-right: 5px;
+	}
+	
+	.password-prompt {
+		display: flex;
+		flex-direction: column;
+	}
+	
+	.password-prompt label {
+		display: flex;
+		width: 100%;
+		margin-top: 10px;
+	}
+	
+	.password-prompt input {
+		border: none;
+		outline: none;
+		-webkit-appearance: none;
+		height: 28px;
+		border: 1px solid #D8D8D8;
+		border-radius: 3px;
+		width: 80%;
+	}
+	
+	.password-prompt span {
+		display: inline-flex;
+		font-size: 12px;
+		margin-right: 10px;
+		color: #282828;
+		width: 57px;
+	}
+	
+	.password-prompt button {
+		font-size: 12px;
+		border: none;
+		outline: none;
+		-webkit-appearance: none;
+		height: 32px;
+		border: 1px solid #D8D8D8;
+		border-radius: 3px;
+		color: #282828;
+		background: #f5f5f5;
+		padding: 0 1px;
+		margin-left: 5px;
+	}
+</style>

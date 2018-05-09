@@ -1,0 +1,519 @@
+<template>
+
+	<div>
+
+		<app-header title="经验分享"></app-header>
+		<div class="jyfx-main">
+
+		  <div class="searchwrap" :style="{position:ptstyle}">
+        <div class="search">
+          <input type="text" maxlength="15" placeholder="搜索">
+          <span class="fa fa-search"></span>
+        </div>
+      </div>
+      <mt-loadmore :top-method="loadTop" :bottom-method="loadBottom" :bottom-all-loaded="allLoaded" ref="loadmore">
+      		<ul class="jyfx-list">
+      			<li v-for="(item,index) in lists" class="jyfx-li">
+      				<div class="orderNo font-size-16">{{index+1}}</div>
+      				<div class="contents" @click="jyfxdetail(item.noticeCode)">
+      					<div class="titles font-size-16">{{item.title}}</div>
+      					<div class="type-time">{{item.categoryName}}&nbsp;&nbsp;{{item.pubDateString}}</div>
+      				</div>
+      				<div class="discuss">
+      					<div class="disicon" @click="praisecommentShow(index)">
+      						<span class="left-arrow"></span>
+      					</div>
+      					<div class="praisecomment" v-show="item.praisecommentflag">
+      						<span class="praiseicon" @click="praiseif(index)">
+      							<span class="fa fa-heart-o heart"></span>&nbsp;赞
+      						</span>
+      						<span class="commenticon">
+      							<span class="comment">&nbsp;</span>&nbsp;评论
+      						</span>
+      					</div>
+      				  <span class="read-icon" :class="{'not-read':noticeflag[index]}"></span>
+      				</div>
+      				<div class="praisecommentmsg" v-show="item.praisecommentflag && noticeflag[index]">
+      				  <div class="praiseWrap" v-show="item.likeCount">
+      				    <span class="fa fa-heart-o heart"></span>&nbsp;{{item.NoticeLikeview}}
+                </div>
+                <div class="hr" v-show="item.likeCount&&item.reviewCount"></div>
+                <div class="commentWrap" v-show="item.reviewCount">
+                  <div v-for="items in item.NoticeReviewArr">
+                    <div class="lis">
+                      <span class="names">{{items.empNm}}</span>：{{items.content}}
+                    </div>
+                    <div class="lis" v-if="items.childrenReviews.length" v-for="childrens in items.childrenReviews">
+                      <span class="names">{{childrens.empNm}}</span> 回复 <span class="names">{{items.empNm}}</span>：{{childrens.content}}
+                    </div>
+                  </div>
+                </div>
+                <div class="loadmore" v-show="false">加载更多&gt;&gt;</div>
+              </div>
+      			</li>
+      		</ul>
+      	</mt-loadmore>
+
+		</div>
+	</div>
+</template>
+
+<script>
+	import AppHeader from "@/components/HeaderComponent";
+	import { httpGetMethod } from "../utils/api.js"; //添加公共组件
+  export default {
+    name: 'JyfxComponent',
+		data: function() {
+      return {
+        RowNum:0,//页码
+        PageSize:20,//每页加载条数
+        lists:[],//文章列表
+        listLength:0,//文章长度
+        allLoaded:false,//是否已加载
+        noticeflag:[],//评论和点赞条数是否全为0
+        likeReviewload:[],//调用点赞、评论信息接口（一次）
+        HasNoticeLike:[],//是否已点赞
+        NoticeLikeview:[],//点赞列表
+        NoticeLikemaxlen: 5,//显示的点赞人数
+        ptstyle:"fixed",//ios
+      }
+    },
+    components: {
+      AppHeader
+    },
+    mounted(){
+      //列表初始化
+      this.initList(this.RowNum,"1");
+    },
+    methods: {
+      //获取数据
+      initList(RowNum,updown){
+        let self = this;
+        httpGetMethod("hrs-ess/app/getExperienceShareList.action?",{
+          RowNum:RowNum,//页码
+          PageSize:self.PageSize,//每页加载条数
+          title:"",
+          cateCode:"",
+          bizCode:""
+        },function(result){
+          if(result.success){
+            if(result.msg == "0") {
+              self.$toast({
+                message: '暂无数据！',
+                position: 'middle',
+                duration: 500
+              });
+              return;
+            }
+            for(let i = 0,l = result.data.length; i < l; i++){
+              result.data[i].praisecommentflag = false;
+              result.data[i].NoticeReviewArr = [];
+            }
+            self.lists = self.lists.concat(result.data);
+            self.listLength = self.lists.length;
+            self.noticeload();//获取点赞、评论条数
+            if(updown=="1") {
+              self.$refs.loadmore.onTopLoaded();
+            }else{
+              self.$refs.loadmore.onBottomLoaded();
+            }
+            if(self.lists.length == result.msg) {
+              self.allLoaded = true;//数据已全部获取完毕
+            }
+          }else{
+            if(result.msg == "0") {
+              self.$toast({
+                message: '暂无数据！',
+                position: 'middle',
+                duration: 500
+              });
+              return;
+            }
+          }
+        });
+      },
+      //下拉刷新
+      loadTop() {
+        this.allLoaded = false;
+        this.RowNum = 0;
+        this.lists = [];
+        this.noticeNo = 0;
+        this.noticeflag = [];
+        this.initList(this.RowNum,"1");
+      },
+      //上拉加载
+      loadBottom() {
+        if(!this.allLoaded){
+          this.RowNum++;
+          this.initList(this.RowNum,"2");
+        }
+      },
+      //查看详情
+      jyfxdetail(noticeCode){
+        window.location.href = "#/ylbxdetail/11/" + noticeCode;
+        console.log(noticeCode)
+      },
+      //获取点赞、评论条数
+      noticeload(){
+        let self = this;
+        httpGetMethod("hrs-ess/app/getNoticeReviewCount.action?",{
+          noticeCode:self.lists[self.noticeflag.length].noticeCode, //经验分享、小常识编号
+        },function(result){
+          if(result.success){
+            let lens = self.noticeflag.length;
+            if(result.data.likeCount){
+              //获取点赞列表
+              httpGetMethod("hrs-ess/app/getNoticeLikeInfo.action?",{
+                noticeCode:self.lists[lens].noticeCode, //经验分享、小常识编号
+              },function(result){
+                if(result.success){
+                  let NoticeLikeview = result.data;
+                  let minl = Math.min(result.msg, self.NoticeLikemaxlen);
+                  NoticeLikeview = NoticeLikeview.slice(0,minl);
+                  NoticeLikeview = NoticeLikeview.map(function(n){
+                    return n.empName;
+                  }).join("，");
+                  if(result.msg > minl) {
+                    NoticeLikeview += '等' + result.msg + '人觉得很赞';
+                  }
+                  self.lists[lens].NoticeLikeview = NoticeLikeview;
+                }
+              },function(){},true);
+            }
+            self.lists[lens].likeCount = result.data.likeCount;//点赞条数
+            self.lists[lens].reviewCount = result.data.reviewCount;//回复条数
+            self.noticeflag.push(result.data.likeCount + result.data.reviewCount);
+            if(self.noticeflag.length<self.lists.length){
+              self.noticeload();
+            }
+          }
+        },function(){},true);
+      },
+      //展开、收起评论和点赞
+      praisecommentShow(_index){
+        let self = this;
+        if(!self.lists[_index].praisecommentflag){
+          self.lists.map(function(n,i){
+            if(n.praisecommentflag) self.lists[i].praisecommentflag=false;
+          });
+        }
+        self.lists[_index].praisecommentflag = !self.lists[_index].praisecommentflag;
+        if(!self.likeReviewload[_index]){
+          self.likeReviewload[_index] = true;
+          let noticeCode = self.lists[_index].noticeCode;
+
+          //是否已点赞
+          if(self.lists[_index].likeCount){
+            httpGetMethod("hrs-ess/app/getHasNoticeLike.action?",{
+              noticeCode:noticeCode, //经验分享、小常识编号
+            },function(result){
+              if(result.success && result.data){
+                self.HasNoticeLike[_index] = true;
+              }
+            },function(){},true);
+          }
+
+          //评论条数
+          if(self.lists[_index].reviewCount){
+            //获取评论信息
+            httpGetMethod("hrs-ess/app/getNoticeReviews.action?",{
+              noticeCode:noticeCode, //经验分享、小常识编号
+            },function(result){
+              if(result.success){
+                self.lists[_index].NoticeReviewArr = result.data;
+              }
+            },function(){},true);
+          }
+        }
+      },
+      //是否能点赞
+      praiseif(_index) {
+        let self = this;
+        if(this.HasNoticeLike[_index]){
+          this.$toast({
+            message: '您已经赞过了！',
+            position: 'middle',
+            duration: 2000,
+            className:"toast"
+          });
+          return;
+        }else{//可以点赞
+          httpGetMethod("hrs-ess/app/addNoticeLike.action?",{
+            noticeCode:self.lists[_index].noticeCode, //经验分享、小常识编号
+          },function(result){
+            if(result.success){
+              httpGetMethod("hrs-ess/app/getNoticeLikeInfo.action?",{
+                noticeCode:self.lists[_index].noticeCode, //经验分享、小常识编号
+              },function(result){
+                if(result.success){
+                  let NoticeLikeview = result.data;
+                  let minl = Math.min(result.msg,self.NoticeLikemaxlen);
+                  NoticeLikeview = NoticeLikeview.slice(0,minl);
+                  NoticeLikeview = NoticeLikeview.map(function(n){
+                    return n.empName;
+                  }).join("，");
+                  if(result.msg > minl) {
+                    NoticeLikeview += '等' + result.msg + '人觉得很赞';
+                  }
+                  self.lists[_index].NoticeLikeview = NoticeLikeview;
+                }
+              },function(){},true);
+            }
+          },function(){},true);
+        }
+      },
+      //解决ios定位方式fixed问题  @focus='ptstyleInOut("absolute")' @blur='ptstyleInOut("fixed")'
+      ptstyleInOut(ptstyle) {
+        this.ptstyle=ptstyle;
+      },
+    }
+	}
+</script>
+<style type="text/css">
+	.jyfx-main{
+	  font-size: 12px;
+    text-align: left;
+	}
+	.jyfx-main .searchwrap{
+    position: fixed;
+    top: 40px;
+    z-index: 1;
+	  width: 100%;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    background: #f5f5f5;
+  }
+  .jyfx-main .search{
+    width: 80%;
+    margin: 0 10%;
+  }
+  .jyfx-main .search input{
+    padding: 0 0 0 12%;
+    width: 88%;
+    height: 28px;
+    border: 1px solid #e9e9e9;
+    border-radius: 30px;
+    outline: none;
+    font-size: 13px;
+  }
+  .jyfx-main .search span{
+    position: absolute;
+    top: 20px;
+    left: 10%;
+    margin-left: 10px;
+  }
+	.jyfx-main .mint-loadmore{
+    position: relative;
+    z-index: 0;
+    margin-top: 90px;
+	}
+	.jyfx-main .jyfx-list{
+	  list-style-type: none;
+	}
+	.jyfx-main .jyfx-list::-webkit-scrollbar{
+    display: none;
+  }
+  .jyfx-main .jyfx-li{
+    padding: 10px 16px;
+    line-height: 1.4;
+  }
+  .jyfx-main .jyfx-list .jyfx-li:nth-child(odd){
+  	background-color: #fff;
+  }
+  .jyfx-main .jyfx-list .jyfx-li:nth-child(even){
+  	background-color: #f0fafc;
+  }
+  .jyfx-main .font-size-14{
+    font-size: 14px;
+  }
+  .jyfx-main .font-size-16{
+    font-size: 16px;
+  }
+  .jyfx-main .orderNo{
+    float: left;
+    color: #05a54b;
+  }
+  .jyfx-main .contents{
+    margin-left: 30px;
+    margin-right: 60px;
+  }
+  .jyfx-main .contents .titles{
+  	display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  	font-size: 16px;
+  	color: #5c5c5c;
+  }
+  .jyfx-main .contents .type-time{
+    padding-top: 4px;
+  	color: #bababa;
+  }
+  .jyfx-main .discuss {
+  	position: relative;
+  	float: right;
+  	margin-top: -20px;
+  	width: 30px;
+  	height: 20px;
+  }
+  .jyfx-main .disicon {
+  	position: absolute;
+  	bottom: 0;
+  	right: 0;
+  	width: 24px;
+  	height: 16px;
+  	background: #83a3ba;
+  }
+  .jyfx-main .disicon:before, .jyfx-main .disicon:after {
+  	content: '';
+  	position: absolute;
+  	top: 5px;
+  	width: 0;
+  	height: 0;
+  	border: 3px solid #fff;
+  	border-radius: 3px;
+  }
+  .jyfx-main .disicon:before {
+  	left: 4px;
+  }
+  .disicon:after {
+  	right: 4px;
+  }
+  .jyfx-main .left-arrow {
+  	position: absolute;
+  	left: -5px;
+  	top: 5px;
+  	width: 0;
+  	height: 0;
+  	border-top: 3px solid transparent;
+  	border-bottom: 3px solid transparent;
+  	border-right: 5px solid #83a3ba;
+  }
+  .jyfx-main .praisecomment {
+  	position: absolute;
+  	z-index: 98;
+  	float: left;
+  	right: 100%;
+  	bottom: -6px;
+  	margin-right: 10px;
+  	width: 130px;
+  	height: 28px;
+  	-webkit-transition:width .2s;
+  	transition:width .2s;
+  	overflow: hidden;
+  	font-size: 14px;
+  	color: #fff;
+  	line-height: 28px;
+  	background: #84a3bb;
+  	border-radius: 4px;
+  }
+  .jyfx-main .praisecomment:after {
+  	content: "";
+  	position: absolute;
+  	left: 50%;
+  	top: 4px;
+  	bottom: 4px;
+  	width: 1px;
+  	background: #688499;
+  }
+  .jyfx-main .praisecomment .praiseicon{
+  	float: left;
+  	width: 50%;
+  	text-align: center;
+  }
+  .jyfx-main .praisecomment .commenticon{
+    float: right;
+    width: 50%;
+      	text-align: center;
+  }
+  .jyfx-main .heart {
+  	font-weight: bold;
+  }
+  .jyfx-main .comment {
+  	position: relative;
+  	display: inline-block;
+  	width: 12px;
+    height: 8px;
+    line-height: 8px;
+  	background: transparent;
+  	border: 2px solid #fff;
+  	border-radius: 2px;
+  }
+  .jyfx-main .comment::before, .jyfx-main .comment::after {
+  	position:absolute;
+  	content: "";
+  	width: 0;
+  	height: 0;
+  	border-bottom: 3px solid transparent;
+  }
+  .jyfx-main .comment::before {
+  	bottom: -5px;
+  	left: 2px;
+  	border-left: 3px solid #fff;
+  }
+  .jyfx-main .comment::after {
+  	bottom: -2px;
+  	left: 3px;
+  	border-left: 3px solid #83a3ba;
+  }
+  .jyfx-main .read-icon {
+  	position: absolute;
+  	right: -5px;
+  	bottom: 10px;
+  	width: 10px;
+  	height: 10px;
+  	background: transparent;
+  	border-radius: 6px;
+  }
+  .jyfx-main .read-icon.not-read {
+  	background: #fb3e42;
+  }
+  .jyfx-main .praisecommentmsg {
+    position: relative;
+    margin-top: 10px;
+    margin-left: 30px;
+    font-size: 12px;
+    color: #606060;
+    background: #eeeeee;
+  }
+  .jyfx-main .praisecommentmsg::before {
+    position:absolute;
+    content: "";
+    top: -10px;
+    left: 16px;
+    width: 0;
+    height: 0;
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent transparent #eeeeee;
+  }
+  .jyfx-main .praiseWrap {
+    padding: 6px 10px;
+    color: #42b0e6;
+    line-height: 20px;
+  }
+  .jyfx-main .hr {
+    height: 0;
+    border-bottom: 1px solid #e7e7e7;
+  }
+  .jyfx-main .commentWrap {
+    padding: 5px 10px;
+  }
+  .jyfx-main .commentWrap .lis {
+    padding: 5px 0;
+    word-break: break-all;
+  }
+  .jyfx-main .commentWrap .names {
+    color: #42b0e6;
+  }
+  .jyfx-main .loadmore {
+    padding-top: 6px;
+    padding-bottom: 6px;
+    width: 100%;
+    font-size: 14px;
+    color: #42b0e6;
+    text-align: center;
+    background: #eeeeee;
+    border-top: 1px solid #e7e7e7;
+  }
+</style>

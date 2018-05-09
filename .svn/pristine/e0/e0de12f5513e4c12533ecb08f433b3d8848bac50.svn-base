@@ -1,0 +1,430 @@
+<template>
+
+  <div>
+    <app-header title="基本信息修改"></app-header>
+    <div class="jbxxxg-main" :style="pageh">
+      <mt-field label="修改字段：" placeholder="姓名" v-if="fieldTag=='0100'" disabled readonly></mt-field>
+      <mt-field label="修改字段：" placeholder="身份证" v-if="fieldTag=='0200'" disabled readonly></mt-field>
+      <mt-field label="新增字段：" placeholder="学历" v-if="fieldTag=='0301'" disabled readonly></mt-field>
+      <mt-field label="修改字段：" placeholder="学历" v-if="fieldTag=='0300'" disabled readonly></mt-field>
+      <mt-field label="原数据：" :placeholder="gather.oldVal" disabled readonly v-if="fieldTag!='0301'"></mt-field>
+
+      <div class="mint-cell mint-field" v-if="fieldTag == '0100' || fieldTag == '0200'">
+        <div class="mint-cell-wrapper">
+          <div class="mint-cell-title">
+            <span class="mint-cell-text">新数据</span>
+          </div>
+          <div class="jbxxxg-input">
+            <input placeholder="请填写新数据" type="text" class="mint-field-core" v-model="newVal">
+          </div>
+        </div>
+      </div>
+
+      <div class="mint-cell mint-field" v-else>
+        <div class="mint-cell-wrapper">
+          <div class="mint-cell-title">
+            <span class="mint-cell-text">新数据：</span>
+          </div>
+          <div class="jbxxxg-input-top" @click="choiceNewVal">
+            <input placeholder="暂无" type="text" class="mint-field-core" readonly="readonly" v-model="education">
+          </div>
+          <div class="jbxxxg-input-down" @click="choiceNewVal">
+            <span class="fa fa-angle-down fa-lg"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="mint-cell mint-field">
+        <div class="mint-cell-wrapper">
+          <div class="mint-cell-title">
+            <span class="mint-cell-text">备注：</span>
+          </div>
+          <div class="jbxxxg-input">
+            <input placeholder="请填写备注" type="text" class="mint-field-core" v-model="essDesc">
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <mt-cell title="所需附件：">
+          <span class="jbxxxg-plus" @click="photograph"> </span>
+        </mt-cell>
+      </div>
+
+      <div class="jbxxxg-img" v-for="(item,index) in enclosureList">
+        <img src="../../../assets/default.png" alt="">
+        <div class="jbxxxg-img-name">
+          <span>{{item.fileName}}</span>
+        </div>
+        <div class="jbxxxg-img-delete" @click="deleteEnclosure(item.attachCode)">
+          <span class="fa fa-close fa-lg"></span>
+        </div>
+      </div>
+
+      <div class="jbxxxg-submit">
+        <mt-button type="primary" size="large" @click="submitForm">提  交</mt-button>
+      </div>
+
+      <!--拍照选择-->
+      <mt-actionsheet
+        :actions="actions"
+        v-model="sheetVisible">
+      </mt-actionsheet>
+
+      <!--选择学历-->
+      <mt-popup v-model="studyVisible" position="bottom" class="xitong-wrapper">
+        <div>
+          <mt-picker :slots="slots" @change="onValuesChangeType"></mt-picker>
+        </div>
+        <div>
+          <mt-button type="default" @click="cancelStudy">取消</mt-button>
+          <mt-button type="primary" @click="enSureStudy">确定</mt-button>
+        </div>
+      </mt-popup>
+    </div>
+
+  </div>
+</template>
+
+<script>
+  import AppHeader from "@/components/HeaderComponent";
+  import { Tool } from "../../../utils/tool.js"; //添加公共组件
+  import {httpGetMethod , State} from "../../../utils/api.js"; //添加公共组件
+  export default {
+    name: 'JbxxxgComponent',
+    data: function() {
+      return {
+        pageh: {
+          height:State().pageh
+        },
+        image:'',
+        sheetVisible:false,
+        studyVisible:false,
+        fieldTag:this.$route.params.fieldTag,
+        gather:{},
+        selectValue:'',
+        education:'',
+        itemCode:'',
+        dictionary:[],
+        newVal:'',
+        essDesc:'',
+        fileStr:'',
+        haha:'1',
+        slots: [
+          {
+            flex: 1,
+            values: [],
+            className: 'slot1',
+            textAlign: 'left'
+          }
+        ],
+        actions:[
+          {
+            name:"拍照",
+            method:this.getCamer
+          },
+          {
+            name:"从相册中选择",
+            method:this.choicePhoto
+          }
+        ],
+        enclosureList:[
+
+        ]
+      }
+    },
+    components: {
+      AppHeader
+    },
+    methods: {
+      //获取修改信息
+      getInfo: function () {
+        let self = this;
+        httpGetMethod("hrs-ess/app/getSqEmpInfo.action?",{
+          fieldTag:self.fieldTag
+        },function(result){
+          if(result.success) {
+            self.gather = {
+              oldVal:result.data.oldVal,
+              sqNo:result.data.sqNo,
+              status:result.data.status
+            };
+            self.getEnclosure();
+          }
+          else {
+            Tool.alert("修改信息获取失败",'','',function () {
+              self.$router.go(-1);
+            });
+          }
+        });
+      },
+
+      //获取学历下拉框
+      getStudyData: function () {
+        let self = this;
+        httpGetMethod("hrs-ess/app/getDictItemInfo.action?",{
+          dictCode:'00121'
+        },function(result){
+          if(result.success) {
+            self.education = result.data[0].itemName;
+            result.data.forEach(function (item) {
+              self.slots[0].values.push(item.itemName);
+              self.dictionary.push({
+                itemCode:item.itemCode,
+                itemName:item.itemName
+              });
+            })
+          }
+          else {
+            Tool.alert("学历获取失败");
+          }
+        });
+      },
+
+//      删除附件
+      deleteEnclosure: function (id) {
+        let self = this;
+        Tool.alert('确定要删除吗？','',true,function () {
+          httpGetMethod("hrs-ess/app/deleteAttach.action?",{
+            attachCode:id,
+          },function(result){
+            if(result.success) {
+              Tool.alert("删除成功")
+              self.getEnclosure();
+            }
+            else {
+              Tool.alert("删除失败" + '<br/>' + result.msg);
+            }
+          });
+        });
+      },
+
+      //选择学历
+      choiceNewVal : function () {
+        this.studyVisible = true;
+      },
+      onValuesChangeType: function (picker,values) {
+        this.selectValue = values[0];
+      },
+      enSureStudy : function () {
+        this.education= this.selectValue;
+        this.studyVisible = false;
+      },
+      cancelStudy: function () {
+        this.studyVisible = false;
+      },
+
+      //提交
+      submitForm: function () {
+        //表单验证
+        if(!this.newVal&&this.fieldTag!='0301'&&this.fieldTag!='0300') {
+          Tool.alert("新数据不能为空");
+          return;
+        }
+        if(this.fieldTag=='0200') {
+          Tool.checkIdentity(this.newVal);
+          if(!Tool.checkIdentity(this.newVal)) {
+            return;
+          }
+        }
+        if(!this.enclosureList.length&&this.fieldTag!='0300') {
+          Tool.alert("请上传附件后提交");
+          return;
+        }
+
+        let self = this;
+        this.dictionary.forEach(function (item) {
+          if(item.itemName == self.education) {
+            self.itemCode = item.itemCode;
+          }
+        });
+        httpGetMethod("hrs-ess/app/updateEmpInfo.action?",{
+          sqNo:self.gather.sqNo,
+          status:'02',
+          fieldTag:self.fieldTag,
+          newVal:self.fieldTag=='0100'||self.fieldTag=='0200'?self.newVal:self.education,
+          essDesc:self.essDesc,
+          itemCode: self.itemCode
+        },function(result){
+          if(result.success) {
+            Tool.alert("提交成功",'','',function () {
+              self.$router.go(-1);
+            });
+          }
+          else {
+            Tool.alert("提交失败" + '<br/>' + result.msg,'','',function () {
+              self.$router.go(-1);
+            });
+          }
+        });
+      },
+
+      photograph:function () {
+        this.sheetVisible = true;
+      },
+
+//      调取拍照
+      getCamer:function () {
+        let self = this;
+        window.SinopecAppPlugin.callHandler('openCamera', {'quality':1000, 'destinationType':0, 'allowedit': true, 'mediaType': 0, 'saveToPhotoAlbum': 1}, function(res) {
+          self.fileStr = 'data:image/png;base64,' + res.data;
+          self.postEnclosure();
+        });
+      },
+
+      //调取相册功能
+      choicePhoto : function () {
+        let self = this;
+        window.SinopecAppPlugin.callHandler('openPictureLibrary', {'quality': 100, 'destinationType': 0}, function(res) {
+          res.data.forEach(function(item){
+            this.fileStr = 'data:image/png;base64,' + self.imageContent;
+            this.postEnclosure();
+          });
+        });
+      },
+
+      //上传附件
+      postEnclosure: function () {
+        let self = this;
+        Tool.loading();
+        self.$http.post(State().mainDomain + 'hrs-ess/app/addEmpSqFile.action?', {
+          Identity_Token: window.empid,
+          sqNo: self.gather.sqNo,
+          fileStr: self.fileStr
+        }, {
+          emulateJSON: true
+        }).then(function(response) {
+          Tool.close();
+
+          if(response.body.success) {
+            Tool.alert("附件上传成功");
+            self.getEnclosure();
+          }
+          else {
+            Tool.alert("图片上传失败");
+          }
+
+        });
+      },
+
+      //获取附件信息
+      getEnclosure: function () {
+        let self = this;
+        httpGetMethod("hrs-ess/app/getSqAttachInfo.action?",{
+          sqNo:self.gather.sqNo
+        },function(result){
+          if(result.success) {
+            self.enclosureList = result.data;
+          }
+          else {
+            Tool.alert("附件信息获取失败");
+          }
+        });
+      },
+    },
+    mounted: function() {
+      this.getInfo();
+      if(this.$route.params.fieldTag == '0300' || this.$route.params.fieldTag == '0301') {
+        this.getStudyData();
+      }
+    }
+  }
+</script>
+<style type="text/css">
+  .clear {
+    clear: both;
+  }
+
+  .jbxxxg-main {
+    overflow-y: auto;
+    background-color: #fff;
+    text-align: left;
+  }
+
+  .jbxxxg-input {
+    width: 100%;
+  }
+
+  input[disabled] {
+    background: white;
+  }
+
+  .jbxxxg-plus {
+    background: url(../../../../static/plus.png) no-repeat center;
+    background-size: contain;
+    display: block;
+    width: 25px;
+    height: 25px;
+  }
+
+  .jbxxxg-submit {
+    margin: 30px 10px 0;
+  }
+
+  .jbxxxg-img {
+    width: 90%;
+    height: 40px;
+    line-height: 40px;
+    background: #f5f5f5;
+    margin: 5px auto;
+  }
+
+  .jbxxxg-img img {
+    width: 30px;
+    height: 30px;
+    margin: 5px 10px;
+    float: left;
+  }
+
+  .jbxxxg-img-name {
+    width:70%;
+    float: left;
+    word-wrap:break-word;
+    font-size: 14px;
+    line-height: 40px;
+    overflow: hidden;
+    display: -webkit-box;
+    text-overflow: ellipsis;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+  }
+
+  .jbxxxg-img-delete {
+    float: right;
+    margin-right: 10px;
+  }
+
+  .jbxxxg-img .fa-lg {
+    line-height: 5px;
+    color: #b4b4b4;
+    font-size: 16px;
+  }
+
+  .jbxxxg-input-top {
+    width: 80%;
+  }
+
+  .jbxxxg-input-down {
+    width: 20%;
+    text-align: right;
+  }
+
+  .xitong-wrapper{
+    height: auto;
+    width: 100%;
+    background: #fff;
+  }
+  .xitong-wrapper .picker-slot.picker-slot-left {
+    text-align: center;
+  }
+  .xitong-wrapper .mint-button {
+    float: left;
+    width: 50%;
+    font-size: 16px;
+    box-shadow: 0 0;
+    border-radius: 0;
+  }
+  .xitong-wrapper .mint-button--primary {
+    background-color: #3d74d9;
+  }
+</style>

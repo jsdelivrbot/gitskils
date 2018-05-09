@@ -1,0 +1,167 @@
+<template>
+
+  <div>
+
+    <app-header title="已答复问题"></app-header>
+    <div class="zjdfxq-main">
+
+      <div class="catetype">提问类型：{{question.cateName}}</div>
+      <div class="question-text">
+        <div class="float-l">问题内容</div>
+        <div class="float-r col-818181">{{question.operDateString}}</div>
+      </div>
+      <div class="text-contents">{{question.contTxt}}</div>
+      <div class="question-text">
+        <!--<div class="question-text">答复</div>-->
+        <div class="question-text" v-if="reply">
+          <div class="float-l">答复内容</div>
+          <div class="float-r col-818181">{{empReply.submitDateString}}</div>
+          <div class="contswrap">
+            <textarea rows="14" class="contstext" readonly>{{empReply.contTxt}}</textarea>
+          </div>
+         </div>
+      </div>
+
+    </div>
+  </div>
+</template>
+
+<script>
+  import AppHeader from "@/components/HeaderComponent";
+  import { Toast } from 'mint-ui';
+  import { httpGetMethod } from "../../../utils/api.js"; //添加公共组件
+  export default {
+    name: 'WyzxxqComponent',
+    data: function() {
+      return {
+        type:"",//查看：chakan  答复：dafu
+        question:{},
+        empReply:{},
+        answerCode:"",
+        reply : false,
+        replymsg:""
+      }
+    },
+    components: {
+      AppHeader
+    },
+    mounted(){
+      let self = this;
+      let questCode = this.$route.params.questCode;//问题状态
+      self.type = this.$route.params.type;
+      httpGetMethod("hrs-ess/app/showQuestionDetail.action?",{
+        questCode:questCode,
+      },function(result){
+        if(result.success){
+          self.question = result.data.question;
+          if(self.question.contTxtAnser != null) {
+            self.reply = true;
+            self.empReply = result.data.empReply;
+          }
+          else{
+            self.reply = false;
+          }
+          self.answerCode = result.data.empReply.answerCode;
+        }else{
+          self.$toast({
+            message: '暂无数据！',
+            position: 'middle',
+            duration: 500
+          });
+          return;
+        }
+      });
+    },
+    methods: {
+      pjTiJiao: function(){
+        let self = this;
+        self.replymsg=self.replymsg.trim();
+        if(!self.replymsg){
+          self.$toast({
+            message: '输入内容不能为空！',
+            position: 'middle',
+            duration: 500
+          });
+          return;
+        }
+        httpGetMethod("hrs-ess/app/saveEmpReply.action?",{
+          answerCode: self.answerCode,
+          contTxt: self.replymsg
+        },function(result){
+          if(result.success){
+            self.$toast({
+              message: '提交成功！',
+              position: 'middle',
+              duration: 500
+            });
+            self.replymsg="";
+          }else{
+            self.$toast({
+              message: '提交失败！',
+              position: 'middle',
+              duration: 500
+            });
+            return;
+          }
+        });
+      },
+    },
+  }
+</script>
+<style type="text/css">
+  .zjdfxq-main{
+    margin-left: 10px;
+    margin-right: 10px;
+    padding-top: 10px;
+    font-size: 16px;
+    text-align: left;
+  }
+  .zjdfxq-main .catetype{
+    padding: 10px;
+    background: #f8f8ee;
+    border-bottom: 1px solid #ebd9a9;
+  }
+  .zjdfxq-main .text-contents{
+    padding: 0 10px 10px;
+    min-height: 80px;
+    line-height: 20px;
+    text-align: justify;
+    word-break:break-all;
+    text-indent: 2em;
+  }
+  .zjdfxq-main .question-text{
+    overflow: hidden;
+    padding: 10px;
+    line-height: 20px;
+  }
+  .zjdfxq-main .float-l{
+    float: left;
+  }
+  .zjdfxq-main .float-r{
+    float: right;
+  }
+  .zjdfxq-main .col-818181{
+    color: #818181;
+  }
+  .zjdfxq-main .contswrap{
+    padding-right: 20px;
+  }
+  .zjdfxq-main .contstext{
+    padding: 8px 10px;
+    width: 100%;
+    font-size: 12px;
+    line-height: 20px;
+    text-align: justify;
+    border: 1px solid #ead8a6;
+    border-radius: 4px;
+    resize: none;
+    outline: none;
+  }
+  .zjdfxq-main .tijiaowrap{
+    margin: 0 auto;
+    width: 80%;
+  }
+  .toast{
+    width: 60%;
+  }
+</style>

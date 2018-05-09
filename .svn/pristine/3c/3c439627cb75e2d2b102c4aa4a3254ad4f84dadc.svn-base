@@ -1,0 +1,52 @@
+<template>
+  <div class="hello">
+    <mt-header fixed title="首页"></mt-header>
+    <ul>
+      <li>
+        <router-link to="/first"> 
+          <mt-button type="primary">第一个测试页面</mt-button>
+        </router-link>
+      </li>
+      <li>
+        <router-link to="/second">
+          <mt-button type="danger">第二个测试页面</mt-button>
+        </router-link>
+      </li> 
+    </ul>
+
+  </div>
+</template>
+
+<script>
+import firstcomponent from './firstcomponent.vue'
+export default {
+  name: 'hello',
+  data () {
+    return {
+      msg: 'Welcome to Your Vue.js App'
+    }
+  },
+  components: { firstcomponent }
+}
+</script>
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style scoped>
+h1, h2 {
+  font-weight: normal;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+li {
+  display: inline-block;
+  margin: 0 10px;
+}
+
+a {
+  color: #42b983;
+}
+</style>

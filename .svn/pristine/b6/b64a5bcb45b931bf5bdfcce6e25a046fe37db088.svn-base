@@ -1,0 +1,201 @@
+<template>
+
+	<div>
+
+		<app-header title="专家问题列表"></app-header>
+		<div class="zjdf-main">
+
+      <mt-loadmore :top-method="loadTop" :bottom-method="loadBottom" :bottom-all-loaded="allLoaded" bottom-pull-text="上拉加载更多" bottom-drop-text="释放加载" ref="loadmore">
+        <ul class="zjdf-uls">
+          <li class="zjdf-li" v-for="list in lists">
+            <div class="question-text bor-btm">
+              <div class="float-l col-818181">
+                问题编号:{{list.questNo}}
+              </div>
+              <div class="float-r col-05a54b">{{statusMsg(list.procStatus)}}</div>
+            </div>
+            <div class="question-text bor-btm">
+              <div class="float-l">
+                问题类型:&ensp;{{list.cateName}}
+              </div>
+              <div class="float-r col-818181">{{list.questionSubmitDateString}}</div>
+            </div>
+            <div class="question-text">
+              <div class="text-contents">{{list.questionText}}</div>
+              <div class="float-r">
+                <mt-button type="primary" size="small" class="look" @click="lookfn(list.questCode)">查看</mt-button>
+                <mt-button type="primary" size="small" class="answer" @click="replyfn(list.procStatus,list.questCode)">答复</mt-button>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </mt-loadmore>
+
+		</div>
+	</div>
+</template>
+
+<script>
+	import AppHeader from "@/components/HeaderComponent";
+	import { Toast } from 'mint-ui';
+	import { httpGetMethod } from "../utils/api.js"; //添加公共组件
+	export default {
+		name: 'ZjdfComponent',
+		data: function() {
+			return {
+        RowNum:0,//页码
+        PageSize:20,//每页加载条数
+        lists:[],
+        allLoaded:false,
+			}
+		},
+		components: {
+			AppHeader
+		},
+		mounted(){
+      //列表初始化
+      let self = this;
+      self.initList(self.RowNum,"1");
+    },
+		methods: {
+		  //获取数据
+      initList(RowNum,updown){
+        let self = this;
+        httpGetMethod("hrs-ess/app/getExpertReplyList.action?",{
+          RowNum:RowNum,//页码
+          PageSize:self.PageSize,//每页加载条数
+        },function(result){
+          if(result.success){
+            if(result.msg == "0") {
+              self.$toast({
+                message: '暂无数据！',
+                position: 'middle',
+                duration: 500
+              });
+              return;
+            }
+            self.lists = self.lists.concat(result.data);
+            if(updown=="1") {
+              self.$refs.loadmore.onTopLoaded();
+            }else{
+              self.$refs.loadmore.onBottomLoaded();
+            }
+            if(self.lists.length == result.msg) {
+              self.allLoaded = true;//数据已全部获取完毕
+            }
+          }else{
+            if(result.msg == "0") {
+              self.$toast({
+                message: '暂无数据！',
+                position: 'middle',
+                duration: 500
+              });
+              return;
+            }
+          }
+        });
+      },
+      //下拉刷新
+      loadTop() {
+        let self = this;
+        self.allLoaded = false;
+        self.RowNum = 0;
+        self.lists=[];
+        self.initList(self.RowNum,"1");
+      },
+      //上拉加载
+      loadBottom() {
+        let self = this;
+        if(!self.allLoaded){
+          self.RowNum++;
+          self.initList(self.RowNum,"2");
+        }
+      },
+      //问题状态
+      statusMsg: function(procStatus){
+        let status = "";
+        switch(procStatus) {
+          case "01": status = "已提交"; break;
+          case "02": status = "已分配"; break;
+          case "03": status = "处理中"; break;
+          case "04": status = "已答复"; break;
+          case "05": status = "已评价"; break;
+          default: break;
+        }
+        return status;
+      },
+      //查看
+      lookfn:function(questCode){
+        window.location.href = "#/zjdfdetail/chakan/" + questCode;
+      },
+      //答复
+      replyfn:function(procStatus,questCode){
+        if(procStatus == "02" || procStatus == "03") {
+          window.location.href = "#/zjdfdetail/dafu/" + questCode;
+        }else{
+          this.$toast({
+            message: '对不起此状态不可答复！',
+            position: 'middle',
+            duration: 2000,
+            className:"toast"
+          });
+        }
+      }
+		},
+	}
+</script>
+<style type="text/css">
+	.zjdf-main{
+	  margin-left: 10px;
+	  margin-right: 10px;
+    padding-top: 10px;
+    font-size: 12px;
+	}
+	.zjdf-main .zjdf-uls {
+	  margin: 0;
+	  padding: 0;
+	  list-style: none;
+	}
+	.zjdf-main .zjdf-li {
+	  margin-bottom: 10px;
+	  background: #fff;
+    border: 1px solid #ebd9a9;
+    border-radius: 4px;
+  }
+  .zjdf-main .float-l{
+    float: left;
+  }
+  .zjdf-main .float-r{
+    float: right;
+  }
+  .zjdf-main .col-818181{
+    color: #818181;
+  }
+  .zjdf-main .col-05a54b{
+    color: #05a54b;
+  }
+  .zjdf-main .bor-btm {
+    border-bottom: 1px solid #ebd9a9;
+  }
+  .zjdf-main .question-text{
+    overflow: hidden;
+  	padding: 6px 10px;
+  	line-height: 20px;
+  }
+  .zjdf-main .text-contents{
+    margin-bottom: 10px;
+    min-height: 70px;
+    text-align: left;
+    text-indent: 2em;
+  }
+  .zjdf-main .look{
+    margin-right: 20px;
+    background: #4c9beb;
+  }
+  .zjdf-main .answer{
+    background: #83a3ba;
+  }
+  .toast{
+    width: 60%;
+  }
+</style>

@@ -1,0 +1,38 @@
+<template>
+	<div>
+		<mt-header style='background-color:#3a71dc' fixed v-bind:title="title">
+			<a @click='goback()' slot="left">
+				<mt-button icon="back">返回</mt-button>
+			</a>
+
+			<div class="mint-header-button is-right" slot='right'>
+				<button class="mint-button mint-button--default mint-button--normal">
+		 			<slot name="right"></slot>
+		 		</button>
+			</div>
+
+		</mt-header>
+	</div>
+</template>
+
+<script>
+	import { Header } from 'mint-ui';
+
+	export default {
+		name: 'AppHeader',
+		props: ["title", "icon", "text","click"],
+		component: {
+			Header
+		},
+		methods: {
+			goback: function() {
+				this.$router.go(-1);
+			}
+
+		}
+	}
+</script>
+
+<style>
+
+</style>

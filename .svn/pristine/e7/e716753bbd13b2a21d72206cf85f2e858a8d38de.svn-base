@@ -1,0 +1,291 @@
+
+<template>
+	<div>
+		<mt-header fixed title="薪酬信息">
+			<router-link to="/" slot="left">
+				<mt-button icon="back">返回</mt-button>
+			</router-link>
+		</mt-header>
+
+		<div class="head">
+		    <div class="head-l"><span class="fa fa-angle-left">上月</span></div>
+		    <div class="head-m"><span>2017/07</span></div>
+		</div>
+
+		<div class="xcxx-main">
+		  	<div class="top">
+		  	  	<div class="top-m">
+		  	  		<div class="top-m-t">应发金额</div>
+		  	  		<div class="top-m-m"><span id="top-m-j">16,765.00</span>&nbsp<span class="top-m-zt">元</span></div>
+		  	  		<div class="top-m-b" ><span v-on:click="ycje">隐藏金额</span></div>
+		  	  	</div>
+
+		  	  	<div class="top-m"></div>
+		  	  	<div class="top-m"></div>
+		  	  </div>
+
+              <div class="contents">
+                <div class="contents-t">
+                	<div class="contents-t-t">
+                	    <div class="contents-t-l"><span>应发工资</span></div>
+                	    <div class="contents-t-r">16765.00&nbsp&nbsp</span></div>  
+                	</div>
+
+                	<div class="contents-t-m">
+                	    <div class="contents-t-m-l"><span>实发工资</span></div>
+                	    <div class="contents-t-m-r">12150.00&nbsp&nbsp</span></div>  
+                	</div>
+
+                	<div class="contents-t-b">
+                	    <div class="contents-t-b-l"><span>社会保险公基金及其他</span></div>
+                	    <div class="contents-t-b-r"><span class="fa fa-angle-down" v-on:click="ycit">3690.00&nbsp&nbsp</span></div>  
+                	</div>
+                </div>        
+
+                <div  id="contents-b">
+                	<div><span>医疗保险</span><span>347.78</span></div>
+                	<div ><span>养老保险</span><span>1234.00</span></div>
+                	<div ><span>失业保险</span><span>567.02</span></div>
+                	<div ><span>工商保险</span><span>237.78</span></div>
+                	<div ><span>住房公积金</span><span>1690.00</span></div>
+                </div>
+               </div>
+		  </div>
+	</div>
+</template>
+
+<script>
+import { Lazyload } from 'mint-ui';
+	export default {
+		name: 'XcxxComponent',
+		data: function() {
+			return {
+
+			}
+		},
+		components: {
+
+		},
+		methods: {
+			ycit: function() {
+				var zt = document.getElementById("contents-b").style.display;
+                if (zt == "none") {
+                    	document.getElementById("contents-b").style.display = "block";
+                } else {
+                    document.getElementById("contents-b").style.display = "none";
+                }
+			},
+			premonth: function() {
+		     this.year--;	
+		    },
+
+		    ycje:function(){
+		    	var  zt = document.getElementById("top-m-j").style.visibility;
+		    	 if (zt == "hidden") {
+                    	document.getElementById("top-m-j").style.visibility = "visible";
+                } else {
+                    document.getElementById("top-m-j").style.visibility = "hidden";
+                }
+
+		    },
+		}
+	}
+</script>
+
+
+<style type="text/css">
+
+
+
+.mint-header.is-fixed {
+	background: #3A71DC;
+}
+
+.mint-header-title {
+	font-size: 16px;
+	font-weight: 100;
+}
+
+/*右边图标*/
+.fa-angle-right:before {
+  float: right;
+}
+
+.fa-angle-down:before {
+  float: right;
+}
+
+.xcxx-main {
+	width: 100%;
+	height:600px;
+	background: #FFFFFF;
+}
+
+.head {
+	background: #3A71DC;
+	height: 40px;
+    color: #FFFFFF; 
+}
+
+.head-l span {
+	width: 60px;
+	font-size: 12px;
+}
+
+.head-l {
+	width: 30px;
+	height: 30px;
+	float: left;
+	margin-left: 15px; 	
+	line-height: 30px;
+	/*border:1px solid red;*/
+}
+
+.head-m {
+	height: 30px;
+	width: 60px;
+	/*border:1px solid red;*/
+    float: left;
+    margin-left: 80px; 
+    line-height: 30px;
+    font-size: 15px;
+}
+
+.top {
+	width: 100%;
+	height: 165px;
+	background: #3A71DC;
+	display: -webkit-box;
+    overflow-x: scroll;
+    -webkit-overflow-scrolling:touch;
+}
+
+ /*隐藏滚动条*/
+	::-webkit-scrollbar {
+	display: none;/*隐藏滚轮*/
+	}
+
+.top-m {
+	margin: 0 30px;
+	width: 80%;
+	height: 125px;
+	background: #ffffff;
+	-webkit-border-radius:8px;
+	margin-right: 10px; 
+}
+
+.top-m-t {
+	height: 30px;
+	line-height: 30px;
+	background: #D2E2FC;
+	color: #505050;
+	font-weight: 900;
+	-webkit-border-radius:8px 8px 0 0; 
+}
+
+.top-m-m {
+	height: 70px;
+	line-height: 70px;
+	font-size: 26px;
+	font-weight: 500;
+}
+
+.top-m-zt {
+	font-size: 12px;
+}
+
+.top-m-b {
+	color: #3A71DC;
+	font-size: 8px;
+}
+.contents {
+	width: 100%;
+	/*border:1px solid red;*/
+	height: auto;
+}
+
+.contents-t {
+	width: 100%;
+	height: 140px;
+}
+
+.contents-t-t, .contents-t-m {
+	border-bottom:1px solid #ECF0FD;
+	height: 50px;
+	color: #282828;
+}
+
+.contents-t-l, .contents-t-m-l {
+	float: left;
+	width: 50px;
+	height: 48px;
+	/*border: 1px solid blue;*/
+	margin-left: 20px; 
+	line-height: 48px;
+	color: #282828;
+}
+
+.contents-t-b {
+	font-size:  14px;
+	color: #282828;
+	font-weight:bold;
+	height: 50px;
+}
+
+.contents-t-b-l {
+	float: left;
+	width: 200px;
+	line-height: 48px;
+}
+
+.contents-t-b-r {
+	float: right;
+	line-height: 50px;
+	margin-right: 20px;
+	font-weight: 900;
+}
+
+.contents-t-r, .contents-t-m-r {
+	float: right;
+	line-height: 50px;
+	margin-right: 20px;
+	height: 50px;
+}
+
+.contents-t-l span, .contents-t-r span {
+   	line-height: 52px;
+   	color: #282828;
+}
+
+#contents-b {
+	margin-top: 1px;
+	margin-left: 10px;
+	margin-right: 10px;
+	background-color: #fff;
+	color: #282828;
+}
+
+#contents-b>div {
+	padding: 20px 15px;
+	line-height: 20px;
+}
+
+#contents-b>div: before {
+	content: "";
+	float: left;
+    margin-right: 3px;
+    margin-top: 7px;
+	width: 0;
+	height: 0;
+	border: 1px solid #548fef;
+	border-radius: 2px;
+}
+
+#contents-b>div span:nth-child(2) {
+	float: right;
+}
+
+#contents-b>div span:nth-child(1) {
+	float: left;
+}
+</style>

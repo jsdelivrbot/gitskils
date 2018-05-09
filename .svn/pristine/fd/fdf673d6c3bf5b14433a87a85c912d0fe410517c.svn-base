@@ -1,0 +1,219 @@
+<template>
+	<div>
+		<app-header title="薪酬信息"></app-header>
+
+		<div class="xcxx-main">
+			<mt-header class='qynj-title' :title="currentmonth">
+				<div @click="premonth" class="qynj-privousyear" slot="left"><span class="fa fa-angle-left"></span>&nbsp;上月</div>
+				<div @click="nextmonth" class="qynj-nextyear" slot="right">下月&nbsp;<span class="fa fa-angle-right"></span></div>
+			</mt-header>
+			<div class="top">
+				<div class="top-content">
+					<div class="top-m">
+						<div class="top-m-t">应发金额</div>
+						<div class="top-m-m"><span id="top-m-j">16,765.00</span>&nbsp<span class="top-m-zt">元</span></div>
+						<div class="top-m-b"><span v-on:click="ycje">隐藏金额</span></div>
+					</div>
+
+					<div class="top-m"></div>
+					<div class="top-m"></div>
+				</div>
+			</div>
+
+			<div class="contents">
+				<div class="contents-t">
+					<div class="contents-item">
+						<div class=""><span>应发工资</span></div>
+						<div class="">16765.00</div>
+					</div>
+
+					<div class="contents-item">
+						<div class=""><span>实发工资</span></div>
+						<div class="">12150.00</div>
+					</div>
+
+					<div class="contents-item contents-item-bold">
+						<div class=""><span>社会保险公基金及其他</span></div>
+						<div v-on:click="ycit" class="contents-item-right">3690.00 <span class="fa fa-angle-down" ></span></div>
+					</div>
+				</div>
+
+				<div class="contents-b" v-if='isbaoxian'>
+					<div class="contents-item contents-b-item"><span>医疗保险</span><span>347.78</span></div>
+					<div class="contents-item contents-b-item"><span>养老保险</span><span>1234.00</span></div>
+					<div class="contents-item contents-b-item"><span>失业保险</span><span>567.02</span></div>
+					<div class="contents-item contents-b-item"><span>工商保险</span><span>237.78</span></div>
+					<div class="contents-item contents-b-item"><span>住房公积金</span><span>1690.00</span></div>
+				</div>
+			</div>
+		</div>
+	</div>
+</template>
+
+<script>
+	import { Lazyload } from 'mint-ui';
+	import AppHeader from "@/components/HeaderComponent";
+	import { State } from "../utils/api.js";
+	import { Headers } from 'mint-ui';
+	export default {
+		name: 'XcxxComponent',
+		data: function() {
+			return {
+				/*定义变量*/
+				isbaoxian: true,
+				currentmonth:'2017/10'
+			}
+		},
+		components: {
+			AppHeader,
+			Headers
+		},
+		methods: {
+			ycit: function() {
+				this.isbaoxian = !this.isbaoxian
+			},
+			premonth: function() {
+				
+			},
+			nextmonth:function(){
+				
+			},
+			ycje: function() {
+				var zt = document.getElementById("top-m-j").style.visibility;
+				if(zt == "hidden") {
+					document.getElementById("top-m-j").style.visibility = "visible";
+				} else {
+					document.getElementById("top-m-j").style.visibility = "hidden";
+				}
+
+			},
+		}
+	}
+</script>
+
+<style type="text/css">
+	.qynj-title {
+		background: #3a71dc;
+		font-size: 16px;
+	}
+	
+	.qynj-title span {
+		font-size: 18px;
+		line-height: 10px;
+	}
+	
+	.qynj-privousyear,
+	.qynj-nextyear {
+		font-size: 12px;
+		align-items: center;
+		display: flex;
+	}
+	
+	.qynj-privousyear {
+		justify-content: flex-start;
+	}
+	
+	.qynj-nextyear {
+		justify-content: flex-end;
+	}
+	.top {
+		background: #3A71DC;
+		display: -webkit-box;
+		overflow: hidden;
+		padding: 10px;
+	}
+	
+	.top-content {
+		width: 100%;
+		display: -webkit-box;
+		overflow-x: scroll;
+		-webkit-overflow-scrolling: touch;
+	}
+	/*隐藏滚动条*/
+	
+	::-webkit-scrollbar {
+		display: none;
+		/*隐藏滚轮*/
+	}
+	
+	.top-m {
+		width: 80%;
+		height: 125px;
+		background: #ffffff;
+		-webkit-border-radius: 8px;
+		margin-right: 10px;
+	}
+	
+	.top-m-t {
+		height: 30px;
+		line-height: 30px;
+		background: #D2E2FC;
+		color: #505050;
+		font-weight: 900;
+		-webkit-border-radius: 8px 8px 0 0;
+	}
+	
+	.top-m-m {
+		height: 70px;
+		line-height: 70px;
+		font-size: 26px;
+		font-weight: 500;
+	}
+	
+	.top-m-zt {
+		font-size: 12px;
+	}
+	
+	.top-m-b {
+		color: #3a71dc;
+		font-size: 8px;
+	}
+	/*页面重新绘制*/
+	
+	.contents-item {
+		font-size: 14px;
+		color: #282828;
+		display: flex;/*弹性盒子*/
+		align-items: center;
+		justify-content: space-between;/*弹性项目平均分布在该行上*/
+		padding: 14px 20px;
+		padding-right: 30px;
+		border-bottom: 1px solid #ecf0fd;
+		background: #fff;
+	}
+	
+	.contents-item-bold {
+		font-weight: bold;
+		padding-right: 0px;
+	}
+	
+	.contents-item-right {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;/*前提弹性盒子 弹性项目平均分布在该行上*/
+	}
+	
+	.contents-item-right span {
+		display: inline-flex;/*内弹性盒子*/
+		width: 20px;
+		height: 20px;
+		align-items: center;
+		margin-right: 10px;
+		justify-content: center;
+	}
+	
+	.contents-b-item {
+		border-bottom: none;
+		background: #fafcff;
+	}
+	
+	.contents-b-item span:first-of-type:before {
+		content: "";
+		display: inline-block;
+		width: 4px;
+		height: 4px;
+		background: #497ddf;
+		border-radius: 4px;
+		margin-right: 5px;
+	}
+</style>

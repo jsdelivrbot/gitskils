@@ -1,0 +1,315 @@
+/**
+ *
+ */
+import Vue from 'vue';
+import axios from 'axios';
+import { Tool } from "./tool.js"; //添加公共组件
+
+Vue.prototype.$http = axios;
+
+// const mainDomain = "http://app.m.sinopec.com/";   // 正式地址
+const mainDomain = "http://10.246.136.233:8080/";  // 测试地址
+
+const webservice = "http://10.5.89.8:8070/";
+// const webservice = "http://10.5.116.12:8070";
+
+//const Identity_Token = "RevjQtAXX4Tab48mEjtZ6g==";
+// const Identity_Token = "rd3Km5NQzrBJiZ1b0t3JEg==";
+
+const webserviceUrl =  "http://10.5.89.8:8070/ServiceSubmit.asmx";   //服务申请
+const webserviceUrl1 =  "http://10.5.89.8:8070/ServiceOrderSearch.asmx";   //服务查询
+
+const mainDomainBxxx = "http://10.246.109.17/"; //报销信息测试地址
+
+const gltbUrl = 'https://10.246.161.143/yqybLogin.htmw?n=';
+
+/*
+ * 公共变量
+ * */
+export function State(config) {
+
+	//注册公共变量
+	let configObj = {
+		"mainDomain": mainDomain,
+		"Identity_Token": window.Identity_Token,
+		"wh": window.innerHeight,
+		"pageh": window.innerHeight - 44 + "px"
+	}
+	if(config && typeof config == 'object') {
+		for(let attr in config) {
+			configObj[attr] = config[attr];
+		}
+	}
+	return configObj
+}
+
+export function getQuery(name) {
+	// return '6dYYD/f4A3L3JFcVqCLiXqZJmfbd3Xj2usLOsJzJYmNHQtdYYgQMNf3oYaGss29n9t4QtXw8B2rZO7UBEh0YLXWZ3WTgChLiOxtMOPUWG5k=\n';
+	let search = window.location.search;
+	if(search.indexOf('?') >= 0) search = search.substr(1);
+	var params = search.match(new RegExp('(^|&)' + name + '=([^&]*)(&|$)'));
+	if(params != null && params.length > 2) return window.unescape(params[2]);
+	return '';
+}
+
+export let httpGetMethods = async() => {
+	axios.get(mainDomain + 'hrs-ess/app/getEmpAgreeLogin.action?', {
+			params: {
+				"token": window.Identity_Token
+			}
+		})
+		.then(function(response) {
+			return response.data
+		})
+		.catch(function(error) {
+			console.log(error);
+		});
+}
+
+export function httpGetgltbUrl() {
+	Tool.loading();
+	axios.get(gltbUrl + Math.random(), {})
+		.then(function(response) {
+			Tool.close();
+			window.location.href = "https://10.246.161.143/yqyb/index.html?token=" + window.Identity_Token + "&number=" + Math.random();
+		})
+		.catch(function(error) {
+			Tool.close();
+			Tool.alert("暂不支持外网访问");
+		});
+}
+
+export function httpGetMethod(methond, param, scussessfun, errorfun, ishowload) {
+
+	let baseparams = {
+		"Identity_Token": window.Identity_Token
+	}
+
+	let urls = mainDomain + methond;
+
+	if(typeof param == "object") {
+		for(let attr in param) {
+			baseparams[attr] = param[attr];
+		}
+	}
+	if(!ishowload) {
+		Tool.loading();
+	}
+
+	axios.get(urls, {
+			params: baseparams
+		})
+		.then(function(response) {
+			if(!ishowload) {
+				Tool.close();
+			}
+
+			if(scussessfun) {
+				scussessfun(response.data)
+			}
+		})
+		.catch(function(error) {
+			Tool.close();
+
+			if(errorfun) {
+				errorfun(error)
+			}
+		});
+}
+
+export function httpGetBxxx(methond, param, scussessfun, errorfun, ishowload) {
+  let date = new Date();
+  let time = formatDate(date);
+  let key = md5("pictcslth123!@#" + time);
+  let baseparams = {
+    "pubKey": key,
+    "isEncrypt": 1,
+    "empId": window.empid
+}
+
+  let urls = mainDomainBxxx + methond;
+
+  if(typeof param == "object") {
+    for(let attr in param) {
+      baseparams[attr] = param[attr];
+    }
+  }
+  if(!ishowload) {
+    Tool.loading();
+  }
+
+  axios.get(urls, {
+    params: baseparams
+  })
+    .then(function(response) {
+      if(!ishowload) {
+        Tool.close();
+      }
+
+      if(scussessfun) {
+        scussessfun(response.data)
+      }
+    })
+    .catch(function(error) {
+      Tool.close();
+
+      if(errorfun) {
+        errorfun(error)
+      }
+    });
+}
+
+export function httpService(methond, param, scussessfun, errorfun, ishowload) {
+
+  let urls = webservice + methond;
+
+  if(!ishowload) {
+    Tool.loading();
+  }
+
+  axios.get (urls, {
+    params: param
+  })
+    .then(function(response) {
+      if(!ishowload) {
+        Tool.close();
+      }
+
+      if(scussessfun) {
+
+        let data1 = response.data.substring(1,response.data.length-1);
+
+        let data2 = eval('(' + data1 + ')');
+
+        let data3 = eval('(' + data2.result + ')');
+
+        scussessfun(data3);
+      }
+    })
+    .catch(function(error) {
+      Tool.close();
+
+      if(errorfun) {
+        errorfun(error)
+      }
+    });
+}
+
+export function httpWebservice(method, params, isapply , scussessfun, errorfun, ishowload) {
+
+  var data;
+  data = '<?xml version="1.0" encoding="utf-8"?>';
+  data = data + '<soap12:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">';
+  data = data + '<soap12:Body>';
+
+  var isobject = false;
+  var paramsStr = "";
+  for(var attr in params) {
+    if(attr) {
+      isobject = true;
+      paramsStr = paramsStr + '<' + attr + '>' + params[attr] + '</' + attr + '>';
+    }
+  }
+  if(isobject) {
+    data = data + '<' + method + ' xmlns="http://tempuri.org/">';
+    data = data + paramsStr
+    data = data + '</' + method + '>';
+  } else {
+    data = data + '<' + method + 'Response  xmlns="http://tempuri.org/" />';
+  }
+
+  data = data + '</soap12:Body>';
+  data = data + '</soap12:Envelope>';
+
+  if(!ishowload) {
+    Tool.loading();
+  }
+
+  axios.post(isapply==true?webserviceUrl:webserviceUrl1, data, {
+    headers: {
+      'Content-Type': 'text/xml;charset=utf-8',
+      'SOAPAction': 'http://tempuri.org/' + method
+    }
+  })
+    .then(function(response) {
+      if(!ishowload) {
+        Tool.close();
+      }
+
+      if(scussessfun) {
+
+        var xmlstr = response["data"].split(method + "Result")[1];
+        var xmlJson
+        try {
+          xmlJson = JSON.parse(xmlstr.slice(1, xmlstr.length - 2));
+        } catch(e) {
+          xmlJson = "";
+
+        }
+
+        scussessfun(xmlJson)
+      }
+    })
+    .catch(function(error) {
+      Tool.close();
+
+      if(errorfun) {
+        errorfun(error)
+      }
+    });
+}
+
+export function modul(type) {
+	let title = "";
+	switch(type) {
+		case "01":
+			title = "养老保险";
+			break;
+		case "02":
+			title = "医疗保险";
+			break;
+		case "03":
+			title = "工伤保险";
+			break;
+		case "04":
+			title = "生育保险";
+			break;
+		case "05":
+			title = "失业保险";
+			break;
+		case "06":
+			title = "公积金/年金";
+			break;
+		case "07":
+			title = "内退及其他";
+			break;
+		case "08":
+			title = "职业通道";
+			break;
+		case "09":
+			title = "考勤管理";
+			break;
+		case "10":
+			title = "小常识";
+			break;
+		case "11":
+		    title = "经验分享";
+			break;
+		case "12":
+			title = "资讯信息";
+			break;
+		default:
+			title = "政策指南";
+			break;
+	}
+
+	return title;
+
+}
+
+export function formatDate(time) {
+
+    let date = new Date(time);
+
+    return Tool.formate(date, 'yyyyMMdd')
+}

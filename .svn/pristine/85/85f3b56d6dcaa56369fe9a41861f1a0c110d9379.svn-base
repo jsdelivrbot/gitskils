@@ -1,0 +1,204 @@
+<template>
+
+	<div>
+
+		<app-header title="服务查询"></app-header>
+
+		<div class="fwcx-main">
+      <!--选择时间段-->
+      <div @click="ChoiceTime" class='itsq-item'>
+        <mt-cell v-bind:title="timeSlot">
+          <span class="fa fa-angle-down"> </span>
+        </mt-cell>
+      </div>
+			<div class="fwcx-item">
+				<mt-field label="服务单号" placeholder="请输入服务单号" v-model="applictionId"></mt-field>
+			</div>
+			<div class="fwcx-item">
+				<mt-field label="描述" placeholder="请输入相关描述" v-model="describe"></mt-field>
+			</div>
+			<div class="fwcx-item" @click="startTimeOpen">
+				<mt-field readonly disabled label="提报开始时间" placeholder="请选择开始时间" :value="pickerStartTime | formatDate">
+					<span class="fwcx-date"></span>
+				</mt-field>
+			</div>
+			<div class="fwcx-item" @click="entTimeOpen">
+				<mt-field readonly disabled label="提报结束时间" placeholder="请选择结束时间" :value="pickerEndTime | formatDate">
+					<span class="fwcx-date"></span>
+				</mt-field>
+			</div>
+
+		    <div  class="fwcx-item fwcx-search" @click="search">
+				<mt-button class="button" type="primary" size="large" @click="search">查  询</mt-button>
+			</div>
+
+			<mt-datetime-picker ref="pickerstart" type="date" :startDate="startTime" :endDate="endTime" v-model="pickerStartTime" year-format="{value} 年" month-format="{value} 月" date-format="{value} 日">
+			</mt-datetime-picker>
+
+			<mt-datetime-picker ref="pickerend" type="date" :startDate="startEndTime" :endDate="endTime" v-model="pickerEndTime" year-format="{value} 年" month-format="{value} 月" date-format="{value} 日">
+			</mt-datetime-picker>
+
+      <!--选择时间段-->
+      <mt-popup v-model="timeVisible" position="bottom" class="xitong-wrapper">
+        <div>
+          <mt-picker :slots="slots" @change="onValuesChangeTime"></mt-picker>
+        </div>
+        <div>
+          <mt-button type="default" @click="cancelTime">取消</mt-button>
+          <mt-button type="primary" @click="enSureTime">确定</mt-button>
+        </div>
+
+      </mt-popup>
+
+		</div>
+
+	</div>
+</template>
+
+<script>
+	import AppHeader from "@/components/HeaderComponent";
+	import { Tool } from "../../../utils/tool.js";
+	import { State } from "../../../utils/api.js";
+
+	export default {
+		name: 'FwcxComponent',
+		data: function() {
+			return {
+				pagehight: State().pageh,
+				applictionId: "",
+				describe: "",
+				startTime: new Date("2012-01-01"),
+				endTime: new Date(),
+        startEndTime: new Date(),
+        pickerStartTime: new Date(new Date().getTime() - 7 * 24 * 3600 * 1000),
+        pickerEndTime: '',
+        timeSlot:'近一周单据',
+        timeVisible:false,
+        selectValue:'',
+        slots: [
+          {
+            flex: 1,
+            values: [],
+            className: 'slot1',
+            textAlign: 'left'
+          }
+        ]
+			}
+		},
+		components: {
+			AppHeader,
+		},
+		methods: {
+			startTimeOpen: function() {
+				this.$refs.pickerstart.open();
+			},
+			entTimeOpen: function() {
+			  this.startEndTime = this.pickerStartTime;
+        this.$refs.pickerend.open();
+			},
+			search:function() {
+			  if(this.applictionId == ''){
+          this.applictionId = ' ';
+        }
+        if(this.describe == ''){
+          this.describe = ' ';
+        }
+        this.$router.push("/cxjg" + "/" + this.pagehight + "/" + this.applictionId + "/" + this.describe + "/" + this.formatDate(this.pickerStartTime) + "/" + this.formatDate(this.pickerEndTime));
+      },
+      ChoiceTime: function () {
+        this.timeVisible = true;
+        this.slots[0].values = ['近一周单据','近一个月单据','近三个月单据']
+      },
+      onValuesChangeTime: function (picker,values) {
+        this.selectValue = values[0];
+      },
+      cancelTime: function () {
+        this.serviceVisible = false;
+      },
+      enSureTime :function () {
+        this.timeSlot = this.selectValue;
+        this.timeVisible = false;
+        if(this.selectValue=='近一周单据') {
+          this.pickerStartTime = new Date(new Date().getTime() - 7 * 24 * 3600 * 1000);
+        }
+        else if(this.selectValue=='近一个月单据') {
+          this.pickerStartTime = new Date(Tool.getPreMonth(new Date().getFullYear() + '/' + (new Date().getMonth()+1) + '/' + new Date().getDate()));
+        }
+        else {
+          this.pickerStartTime = new Date(Tool.getPreThreeMonth(new Date().getFullYear() + '/' + (new Date().getMonth()+1) + '/' + new Date().getDate()));
+        }
+      },
+      formatDate(time) {
+        let date = new Date(time);
+        return Tool.formate(date, 'yyyy-MM-dd')
+      }
+		},
+		filters: {
+			formatDate(time) {
+				let date = new Date(time);
+				return Tool.formate(date, 'yyyy-MM-dd')
+			}
+		},
+    mounted: function () {
+
+		}
+	}
+</script>
+<style type="text/css">
+
+	.button {
+      width: 100%;
+      background-color: #4c9beb !important;
+      margin: 0;
+    }
+
+  .itsq-item .mint-cell-wrapper {
+    background-size: 0;
+    text-align: left;
+  }
+
+	.fwcx-footer {
+	    width: 100%;
+	    position: absolute;
+	    bottom: 0;
+	    left: 0;
+	    background-color: #4c9beb !important;
+	}
+
+	.fwcx-item .mint-cell-wrapper {
+		background-size: 0;
+		text-align: left;
+	}
+	 .fwcx-search {
+	 	margin: 50px 10px 0;
+	 }
+	 .fwcx-date{
+	 	background: url(../../../../static/time.png) no-repeat center;
+		background-size: contain;
+		display: block;
+		width: 20px;
+		height: 20px;
+	 }
+	 input:disabled{
+	 	background:#fff;
+	 }
+
+  .xitong-wrapper{
+    height: auto;
+    width: 100%;
+    background: #fff;
+  }
+  .xitong-wrapper .picker-slot.picker-slot-left {
+    text-align: center;
+  }
+  .xitong-wrapper .mint-button {
+    float: left;
+    width: 50%;
+    font-size: 16px;
+    box-shadow: 0 0;
+    border-radius: 0;
+  }
+  .xitong-wrapper .mint-button--primary {
+    background-color: #3d74d9;
+  }
+</style>

@@ -1,0 +1,130 @@
+<template>
+
+	<div>
+
+		<app-header title="查询结果"></app-header>
+
+		<div class="cxjg-main" :style="pageh">
+
+			<div class="cxjg-item" v-for="item in list">
+				<router-link :to="item.path" class="mint-cell"><span class="mint-cell-mask"></span>
+					<div class="mint-cell-left"></div>
+					<div class="mint-cell-wrapper">
+						<div class="mint-cell-title">
+							<span class="mint-cell-text">{{item.title}}</span>
+							<span class="mint-cell-label">服务单号&emsp;{{item.No}}</span>
+							<span class="mint-cell-label">提报时间&emsp;{{item.time}}</span>
+							<span class="mint-cell-label">单据状态&emsp;{{item.state}}</span>
+						</div>
+						<div class="mint-cell-value is-link"><span class=""></span></div>
+					</div>
+					<div class="mint-cell-right"></div> <i class="mint-cell-allow-right"></i>
+					</router-link>
+			</div>
+			<!--<div class="cxjg-item">
+				<a class="mint-cell"><span class="mint-cell-mask"></span>
+					<div class="mint-cell-left"></div>
+					<div class="mint-cell-wrapper">
+						<div class="mint-cell-title">
+							<span class="mint-cell-text">共享测试A</span>
+							<span class="mint-cell-label">服务单号&emsp;123456431234</span>
+							<span class="mint-cell-label">提报时间&emsp;2017-05-12</span>
+							<span class="mint-cell-label">单据状态&emsp;待提报</span>
+						</div>
+						<div class="mint-cell-value is-link"><span class=""></span></div>
+					</div>
+					<div class="mint-cell-right"></div> <i class="mint-cell-allow-right"></i></a>
+			</div>-->
+		</div>
+
+	</div>
+</template>
+
+<script>
+	import AppHeader from "@/components/HeaderComponent";
+	import { Cell } from 'mint-ui';
+	import { State } from "../utils/api.js";
+
+	export default {
+		name: 'CxjgComponent',
+		data: function() {
+			return {
+				pageh: {
+					height: State().pageh
+				},
+				list: [{
+						title: '共享测试A',
+						No: 1234321345,
+						time: "2017-05-12",
+						state: "待提报",
+						path: '/fwxq'
+					},
+					{
+						title: '共享测试A',
+						No: 1234321345,
+						time: "2017-05-12",
+						state: "待提报",
+						path: '/fwxq'
+					},
+					{
+						title: '共享测试A',
+						No: 1234321345,
+						time: "2017-05-12",
+						state: "待提报",
+						path: '/fwxq'
+					},
+					{
+						title: '共享测试A',
+						No: 1234321345,
+						time: "2017-05-12",
+						state: "待提报",
+						path: '/fwxq'
+					},
+					{
+						title: '共享测试A',
+						No: 1234321345,
+						time: "2017-05-12",
+						state: "待提报",
+						path: '/fwxq'
+					},
+					{
+						title: '共享测试A',
+						No: 1234321345,
+						time: "2017-05-12",
+						state: "待提报",
+						path: '/fwxq'
+					},
+					{
+						title: '共享测试A',
+						No: 1234321345,
+						time: "2017-05-12",
+						state: "待提报",
+						path: '/fwxq'
+					},
+					{
+						title: '共享测试A',
+						No: 1234321345,
+						time: "2017-05-12",
+						state: "待提报",
+						path: '/fwxq'
+					}
+				]
+			}
+		},
+		components: {
+			AppHeader,
+			Cell
+		},
+		methods: {}
+	}
+</script>
+<style type="text/css">
+	.cxjg-main {
+		text-align: left;
+	}
+	
+	.cxjg-main .mint-cell-wrapper {
+		padding: 10px;
+		background-size: 0px;
+	}
+</style>

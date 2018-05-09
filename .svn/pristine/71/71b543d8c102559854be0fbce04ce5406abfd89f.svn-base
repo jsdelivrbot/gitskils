@@ -1,0 +1,737 @@
+<template>
+
+	<div>
+
+		<app-header title="服务申请"></app-header>
+		<div class="itsq-main">
+
+      <!--选择系统-->
+			<div @click="ChoiceSystem" class='itsq-item'>
+				<mt-cell v-bind:title="name.system">
+					<span class="fa fa-angle-down"> </span>
+				</mt-cell>
+			</div>
+
+      <!--选择分类-->
+			<div @click="ChoiceCotegory" class='itsq-item'>
+				<mt-cell class='itsq-item' v-bind:title="name.Cotegory">
+					<span class="fa fa-angle-down"> </span>
+				</mt-cell>
+			</div>
+
+      <!--选择系统标识-->
+			<div class='itsq-item' @click="ChoiceSystemId" v-if="show.SystemIdentyItemIsShow">
+				<mt-cell class='itsq-item' v-bind:title="name.systemId">
+					<span class="fa fa-angle-down"> </span>
+				</mt-cell>
+			</div>
+
+      <!--选择模块-->
+			<div class='itsq-item' @click="ChoiceModule" v-if="show.ModuleItemIsShow">
+				<mt-cell class='itsq-item' v-bind:title="name.Module">
+					<span class="fa fa-angle-down"> </span>
+				</mt-cell>
+			</div>
+
+      <div class="itsq-item" v-if="show.FromCompanyIsShow" @click="cache">
+        <mt-field label="来源单位" readonly disabled placeholder="请选择来源单位" v-model="FromCompanyName"></mt-field>
+      </div>
+      <div class="itsq-item itsq-contract" v-if="show.ContractNoInputIsShow">
+        <mt-field label="合同序号" placeholder="请输入合同序号" v-model="contractNum"></mt-field>
+      </div>
+			<div class="itsq-item itsq-description">
+				<mt-field label="描述"  placeholder="请输入服务名称（不超过40字）" v-model="description"></mt-field>
+			</div>
+			<div class="itsq-item itsq-description itsq-miaoshu">
+				<mt-field label="详情" placeholder="请输入详情（0-500字)" type="textarea" rows="4" v-model="detail">
+				</mt-field>
+			</div>
+			<div class="itsq-item itsq-img ">
+				<mt-cell title="上传图片">
+					<span class="itsq-plus" @click="photograph"> </span>
+				</mt-cell>
+			</div>
+      <div class="itsq-img" v-if="imageShow">
+        <img v-bind:src='image' alt="">
+      </div>
+
+			<div class='itsq-jjsq'>
+				<label>
+					<input type="checkbox" name="" id="" v-model="check"/>
+					紧急申请
+				</label>
+			</div>
+			<div class="itsq-submit">
+			  <mt-button class="button" type="primary" size="large" @click="submit">提  交</mt-button>
+      </div>
+    </div>
+
+
+      <!--选择系统-->
+		<mt-popup v-model="SystemVisible" position="bottom" class="xitong-wrapper">
+      <div>
+        <mt-picker :slots="slots1" @change="onValuesChangeSytem"></mt-picker>
+      </div>
+      <div>
+        <mt-button type="default" @click="cancelSystem">取消</mt-button>
+        <mt-button type="primary" @click="enSureSystem">确定</mt-button>
+      </div>
+
+		</mt-popup>
+
+    <!--选择分类-->
+    <mt-popup v-model="CotegoryVisible" position="bottom" class="xitong-wrapper">
+      <div>
+        <mt-picker :slots="slots2" @change="onValuesChangeCotegory"></mt-picker>
+      </div>
+      <div>
+        <mt-button type="default" style="width: 50%;float: left;font-size: 14px" @click="cancelCotegory">取消</mt-button>
+        <mt-button type="primary" style="width: 50%;float:left;font-size: 14px" @click="enSureCotegory">确定</mt-button>
+      </div>
+
+    </mt-popup>
+
+    <!--选择系统标识-->
+    <mt-popup v-model="SystemIdVisible" position="bottom" class="xitong-wrapper">
+      <div>
+        <mt-picker :slots="slots3" @change="onValuesChangeSytemId"></mt-picker>
+      </div>
+      <div>
+        <mt-button type="default" style="width: 50%;float: left;font-size: 14px" @click="cancelSystemId">取消</mt-button>
+        <mt-button type="primary" style="width: 50%;float:left;font-size: 14px" @click="enSureSystemId">确定</mt-button>
+      </div>
+
+    </mt-popup>
+
+    <!--选择模块-->
+    <mt-popup v-model="ModuleVisible" position="bottom" class="xitong-wrapper">
+      <div>
+        <mt-picker :slots="slots4" @change="onValuesChangeModule"></mt-picker>
+      </div>
+      <div>
+        <mt-button type="default" style="width: 50%;float: left;font-size: 14px" @click="cancelModule">取消</mt-button>
+        <mt-button type="primary" style="width: 50%;float:left;font-size: 14px" @click="enSureModule">确定</mt-button>
+      </div>
+
+    </mt-popup>
+
+    <!--选择来源单位-->
+    <mt-popup v-model="CompanyVisible" position="right" class="Companymodel">
+      <button @click="companySelected">
+        <mt-radio
+          v-model="FromCompanyName"
+          :options="options"
+        >
+        </mt-radio>
+      </button>
+
+    </mt-popup>
+
+    <!--拍照选择-->
+    <mt-actionsheet
+      :actions="actions"
+      v-model="sheetVisible">
+    </mt-actionsheet>
+
+	</div>
+</template>
+
+<script>
+	import AppHeader from "@/components/HeaderComponent";
+	import { Field } from 'mint-ui';
+	import { Cell } from 'mint-ui';
+	import { Buttons } from 'mint-ui';
+	import { Popups } from 'mint-ui';
+	import { Pickers } from 'mint-ui';
+  import { httpGetMethod } from "../utils/api.js"; //添加公共组件
+  import { httpWebservice } from "../utils/api.js"; //添加公共组件
+  import { Tool } from "../utils/tool.js"; //添加公共组件
+  // import { JSBridge } from "../utils/JSBridge.js"; //添加JSBridge组件
+
+	export default {
+		name: 'ItsqComponent',
+		data: function() {
+			return {
+        imageContent: '', // 图片内容base64格式的
+        image:'',
+        imageShow:false,
+			  check:false,
+        isUrgency:"",
+				description: "",
+				detail: "",
+        contractNum:'',
+        FromCompanyName:'',
+        path:'',
+        UserCode:'',
+        SystemVisible: false,
+        CotegoryVisible:false,
+        SystemIdVisible:false,
+        ModuleVisible:false,
+        CompanyVisible:false,
+        sheetVisible:false,
+        show:{
+          SystemIdentyItemIsShow:true,
+          ModuleItemIsShow:false,
+          ContractNoInputIsShow:false,
+          FromCompanyIsShow:false
+        },
+        SystemList:[],
+        CotegoryList:[],
+        SystemIdList:[],
+        ModuleList:[],
+        options:[],
+        FromCompanyList:[],
+        code:{
+          systemCode:'',
+          categoryCode:'',
+          systemIdentyCode:'',
+          moduleCode:'',
+          FromCompanyCode:''
+        },
+        name:{
+          system:'请选择系统',
+          Cotegory:'请选择分类',
+          systemId:'请选择系统标识',
+          Module:'请选择模块',
+        },
+        systems:'',
+        Cotegorys:'',
+        systemIds:'',
+        Modules:'',
+        actions:[
+          {
+            name:"拍照",
+            method:this.getCamer
+          },
+          {
+            name:"从相册中选择",
+            method:this.choicePhoto
+          }
+        ],
+        slots1: [
+          {
+            flex: 1,
+            values: [],
+            className: 'slot1',
+            textAlign: 'left'
+          }
+        ],
+        slots2: [
+          {
+            flex: 1,
+            values: [],
+            className: 'slot1',
+            textAlign: 'left'
+          }
+        ],
+        slots3: [
+          {
+            flex: 1,
+            values: [],
+            className: 'slot1',
+            textAlign: 'left'
+          }
+        ],
+        slots4: [
+          {
+            flex: 1,
+            values: [],
+            className: 'slot1',
+            textAlign: 'left'
+          }
+        ]
+			}
+		},
+		methods: {
+      companySelected: function () {
+        this.CompanyVisible = false;
+      },
+      cache: function () {
+        this.CompanyVisible = true;
+      },
+      submit: function () {
+
+        if(this.check){
+          this.isUrgency = "*";
+        }
+        else{
+          this.isUrgency = "";
+        }
+        let self = this;
+
+        if(self.name.system == "请选择系统") {
+          Tool.tip("请选择系统");
+          return;
+        }
+
+        if(self.name.Cotegory == "请选择分类") {
+          Tool.tip("请选择分类");
+          return;
+        }
+
+        if(self.show.SystemIdentyItemIsShow) {
+          if(self.code.systemIdentyCode=='') {
+            Tool.tip("请选择系统标识");
+            return;
+          }
+        }
+
+        if(self.show.ModuleItemIsShow) {
+          if(self.code.moduleCode=='') {
+            Tool.tip("请选择模块");
+            return;
+          }
+        }
+
+        if(self.show.ContractNoInputIsShow){
+          Tool.checkNum(self.contractNum);
+          if(!Tool.checkNum(self.contractNum)){
+            return;
+          }
+        }
+        if(self.show.FromCompanyIsShow) {
+          self.FromCompanyList.forEach(function (item) {
+            if(self.FromCompanyName == item.FromCompanyName){
+              self.code.FromCompanyCode = item.FromCompanyCode;
+            }
+          })
+          if(self.code.FromCompanyCode=='') {
+            Tool.tip("请选择来源单位");
+            return;
+          }
+        }
+        if(self.description==''){
+          Tool.tip("请填写描述");
+          return;
+        }
+        if(self.detail==''){
+          Tool.tip("请填写详情");
+          return;
+        }
+        self.submitForm();
+      },
+      ChoiceSystem: function() {
+        this.SystemVisible = true;
+			},
+      ChoiceCotegory : function () {
+        if(this.code.systemCode ==''){
+          Tool.alert("请先选择系统");
+          return;
+        }
+        this.CotegoryVisible = true;
+      },
+      ChoiceSystemId : function () {
+        if(this.code.systemCode ==''){
+          Tool.alert("请先选择系统");
+          return;
+        }
+        if(this.code.categoryCode ==''){
+          Tool.alert("请先选择分类");
+          return;
+        }
+        this.SystemIdVisible = true;
+      },
+      ChoiceModule: function () {
+        this.ModuleVisible = true;
+      },
+      cancelSystem: function() {
+        this.SystemVisible = false;
+      },
+      cancelCotegory : function () {
+        this.CotegoryVisible = false;
+      },
+      cancelSystemId : function () {
+        this.SystemIdVisible = false;
+      },
+      cancelModule: function () {
+        this.ModuleVisible = false;
+      },
+      onValuesChangeSytem: function (picker, values) {
+        this.systems = values;
+      },
+      onValuesChangeCotegory : function (picker, values) {
+        this.Cotegorys = values;
+      },
+      onValuesChangeSytemId :function (picker, values) {
+        this.systemIds= values;
+      },
+      onValuesChangeModule :function (picker, values) {
+        this.Modules = values;
+      },
+      onValuesChangeCompany :function (picker, values) {
+
+      },
+      enSureSystem: function () {
+        this.name.system = this.systems[0];
+        this.SystemVisible = false;
+        this.name.Cotegory = '请选择分类';
+        this.clearForm();
+        let self = this;
+        self.SystemList.forEach(function (item) {
+          if(self.name.system == item.SysName){
+            self.code.systemCode = item.SysCode;
+          }
+        })
+        //获取分类列表
+        self.slots2[0].values = [];
+        self.CotegoryList = [];
+        httpWebservice("GetFormSubmitItemModulBySys",{
+          "userCode":self.UserCode,
+          "systemCode": self.code.systemCode
+        },true,function(result){
+          result.CotegoryListInfo.forEach(function (item) {
+            self.CotegoryList.push(item);
+          });
+          self.CotegoryList.forEach(function (item) {
+            self.slots2[0].values.push(item.CotegoryName);
+          })
+        })
+      },
+      enSureCotegory: function () {
+			  let self = this;
+        self.name.Cotegory = self.Cotegorys[0];
+        self.CotegoryVisible = false;
+        this.clearForm();
+        self.CotegoryList.forEach(function (item) {
+          if(self.name.Cotegory == item.CotegoryName){
+            self.code.categoryCode = item.CotegoryCode;
+          }
+        })
+        this.getdata();
+      },
+      enSureSystemId: function () {
+        let self = this;
+        self.name.systemId = self.systemIds[0];
+        self.SystemIdList.forEach(function (item) {
+          if(self.name.systemId == item.SystemIdentyName){
+            self.code.systemIdentyCode = item.SystemIdentyCode;
+          }
+        })
+        self.SystemIdVisible = false;
+      },
+      enSureModule: function () {
+        let self = this;
+        self.name.Module = self.Modules[0];
+        self.ModuleVisible = false;
+        self.ModuleList.forEach(function (item) {
+          if(self.name.Module == item.ModuleName){
+            self.code.moduleCode = item.ModuleCode;
+          }
+        })
+        self.ModuleVisible = false;
+      },
+      getdata:function () {
+        let self = this;
+        self.SystemIdList = [];
+        self.ModuleList = [];
+        self.slots3[0].values = [];
+        self.slots4[0].values = [];
+        self.options = [];
+        //获取系统标识和模块
+
+        httpWebservice("GetSystemIdentyAndModuleBySysAndCotegory",{
+          "userCode":self.UserCode,
+          "systemCode": self.code.systemCode,
+          "categoryCode": self.code.categoryCode
+        },true,function(result){
+          self.show.SystemIdentyItemIsShow = result.SystemIdentyItemIsShow;
+          self.show.ModuleItemIsShow = result.ModuleItemIsShow;
+          self.show.ContractNoInputIsShow = result.ContractNoInputIsShow;
+          self.show.FromCompanyIsShow = result.FromCompanyIsShow;
+
+//          系统标识别
+          if(result.SystemIdentyItemIsShow){
+            result.SystemIdentyListInfo.forEach(function (item) {
+              self.SystemIdList.push(item);
+            });
+            self.SystemIdList.forEach(function (item) {
+              self.slots3[0].values.push(item.SystemIdentyName);
+            })
+          }
+
+//          模块
+          if(result.ModuleItemIsShow && self.ModuleList==''){
+            result.ModuleListInfo.forEach(function (item) {
+              self.ModuleList.push(item);
+            });
+            self.ModuleList.forEach(function (item) {
+              self.slots4[0].values.push(item.ModuleName);
+            })
+          }
+
+//          来源单位
+          if(result.FromCompanyIsShow){
+            result.FromCompanyListInfo.forEach(function (item) {
+              self.options.push(item.FromCompanyName);
+            })
+            result.FromCompanyListInfo.forEach(function (item) {
+              self.FromCompanyList.push(item);
+            })
+            self.FromCompanyName = self.FromCompanyList[0].FromCompanyName;
+          }
+        })
+      },
+      //获取系统列表
+      getSysyem: function () {
+        let self = this;
+        //获取系统列表
+        httpWebservice("InitSystem",{
+          "key":"0okm9ijn8uhb7ygv6tfc5rdx",
+          "token":window.Identity_Token
+          },true,function(result){
+          if(result.ResultState == "E") {
+            Tool.alert(result.ResultMessage,'','',function () {
+              self.$router.go(-1);
+            });
+          }
+          else {
+            result.SystemListInfo.forEach(function (item) {
+              self.SystemList.push(item);
+            })
+            self.SystemList.forEach(function (item) {
+              self.slots1[0].values.push(item.SysName);
+            })
+            self.UserCode = result.UserCode;
+          }
+
+        })
+      },
+      //提交表单
+      submitForm: function () {
+        let self = this;
+        httpWebservice("Submit",{
+          "userCode":self.UserCode,
+          "systemCode" : self.code.systemCode,
+          "categoryCode" : self.code.categoryCode,
+          "systemIdentyCode" : self.code.systemIdentyCode,
+          "moduleCode" : self.code.moduleCode,
+          "isUrgency" : self.isUrgency,
+          "fromCompanyCode" : self.code.FromCompanyCode,
+          "fromCompanyName" : self.FromCompanyName,
+          "contractNo" : self.contractNum,
+          "shortDescription" : self.description,
+          "longDescription" : self.detail,
+          "fileName" : "filename.png",
+          "fileContent" : self.imageContent
+        },true,function(result) {
+          if( result.ResultState == "S" ) {
+            Tool.ItAlert("提报成功" + '<br/>' + '服务单号为：' + result.OrderNo,'',function () {
+              self.$router.push('/fwxq/'+ result.OrderNo + '/' + self.UserCode);
+            },function () {
+              self.$router.go(-1);
+            });
+          }
+          else {
+            Tool.alert("提报失败" + '<br/>' + result.ResultMessage,'','',function () {
+              self.$router.go(-1);
+            });
+          }
+        })
+      },
+//      清除表单
+      clearForm: function () {
+        this.name.systemId = '请选择系统标识';
+        this.name.Module = '请选择模块';
+        this.show.SystemIdentyItemIsShow = true;
+        this.show.ModuleItemIsShow = false;
+        this.show.ContractNoInputIsShow = false;
+        this.show.FromCompanyIsShow = false;
+        this.code.systemIdentyCode = '';
+        this.code.moduleCode = '';
+        this.code.FromCompanyCode = '';
+        this.FromCompanyName = '';
+        this.contractNum = '';
+      },
+      photograph:function () {
+        this.sheetVisible = true;
+      },
+      getCamer:function () {
+        let self = this;
+        window.JSBridge.callHandler('openCamera', {}, function(res) {
+          self.imageContent = res;
+          self.image = 'data:image/png;base64,' + self.imageContent;
+          self.imageShow = true;
+        });
+      },
+      choicePhoto : function () {
+        let self = this;
+        window.JSBridge.callHandler('openPictureLibrary', {}, function(res) {
+          self.imageContent = res;
+          self.image = 'data:image/png;base64,' + self.imageContent;
+          self.imageShow = true;
+        });
+      }
+    },
+    mounted: function () {
+      this.getSysyem();
+    },
+    components: {
+			AppHeader,
+			Cell,
+			Field,
+			Buttons,
+			Popups,
+			Pickers
+		}
+	}
+</script>
+<style type="text/css">
+
+  .button {
+    width: 100%;
+    background-color: #4c9beb !important;
+    margin: 0;
+  }
+
+  .itsq-footer {
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    background-color: #4c9beb !important;
+  }
+
+	.jqqd-main {
+		background: #f5f5f5;
+		width: 100%;
+		padding: 10px 0;
+		display: flex;
+		justify-content: flex-start;
+	}
+
+	.itsq-item .mint-cell-wrapper {
+		background-size: 0;
+		text-align: left;
+	}
+
+	.itsq-description {
+		margin: 10px 0;
+		border-top: 1px solid #d9d9d9;
+	}
+
+  .itsq-main {
+    overflow-x: hidden;
+  }
+
+	.itsq-main .itsq-description .mint-cell-title {
+		width: 50px;
+	}
+
+  .itsq-main .itsq-contract .mint-cell-title{
+    width: 70px;
+  }
+
+  textarea {
+    resize: none;
+  }
+
+  .itsq-main {
+    padding-top: 15px;
+  }
+
+	.itsq-img {
+		border-top: 1px solid #d9d9d9;
+	}
+
+	.itsq-plus {
+		background: url(../../static/plus.png) no-repeat center;
+		background-size: contain;
+		display: block;
+		width: 25px;
+		height: 25px;
+	}
+
+	.itsq-jjsq label {
+		display: flex;
+		padding: 10px;
+		align-items: center;
+		justify-content: flex-start;
+		font-size: 14px;
+	}
+
+	.itsq-jjsq input[type='checkbox'] {
+		margin-right: 6px;
+		outline: none;
+		background: #fff;
+		appearance: none;
+		border: 1px solid #d8d8d8;
+		width: 20px;
+		height: 20px;
+		border-radius: 3px;
+
+	}
+
+	.itsq-jjsq input[type='checkbox']:checked {
+		background: url(../../static/checkbox_select.png) no-repeat center;
+		background-size: contain;
+	}
+
+	.itsq-submit {
+		margin: 50px 10px 0;
+	}
+	.xitong-wrapper{
+		height: auto;
+		width: 100%;
+		background: #fff;
+	}
+  .xitong-wrapper .picker-slot.picker-slot-left {
+    text-align: center;
+  }
+  .IT-navigation{
+    height:40px;
+    text-align: center;
+    line-height: 40px;
+    border-bottom: 1px solid #ebebeb;
+  }
+  .xitong-wrapper .mint-button {
+    float: left;
+    width: 50%;
+    font-size: 16px;
+    box-shadow: 0 0;
+    border-radius: 0;
+  }
+  .xitong-wrapper .mint-button--primary {
+    background-color: #3d74d9;
+  }
+  .Companymodel {
+    width: 80%;
+    height: 100%;
+    background: #fafafc;
+    overflow-y: auto;
+    text-align: left;
+  }
+
+  .Companymodel button {
+    background: white;
+    border: none;
+  }
+
+  input:disabled {
+    background:#fff;
+  }
+
+  .Companymodel .mint-radiolist-label {
+    padding: 10px;
+  }
+
+  .Companymodel .mint-radio-core {
+    float: left;
+    margin-right: 10px;
+  }
+
+  .itsq-miaoshu .mint-cell-title {
+    margin-top: -73px;
+  }
+
+  .itsq-img {
+    overflow-x: hidden;
+    margin-top: 20px;
+  }
+
+  .itsq-img img{
+    width: 100%;
+    height: 200px;
+  }
+
+
+</style>

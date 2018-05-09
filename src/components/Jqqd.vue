@@ -1,0 +1,55 @@
+<template>
+
+	<div>
+		<app-header title="建设中"></app-header>
+		<div class="jqqd-main">
+			<div class="jqqd-content"><img class="jqqd-img" src="../../static/jqqd.png"></div>
+		</div>
+
+	</div>
+</template>
+
+<script>
+	import AppHeader from "@/components/HeaderComponent";
+	import { State,httpGetBxxx } from "../utils/api.js";
+	export default {
+		name: 'JqqdComponent',
+		data: function() {
+			return {
+				pageh: {
+					height:State().pageh
+				}
+			}
+		},
+		components: {
+			AppHeader
+		},
+		methods: {
+
+		},
+		mounted: function() {
+
+		}
+	}
+</script>
+<style type="text/css">
+	.jqqd-main {
+		background: #f5f5f5;
+		position: absolute;
+		top: 40px;
+		bottom: 0;
+		left: 0;
+		right: 0;
+    /*display: flex;*/
+	}
+
+	.jqqd-content {
+		margin: 0 auto;
+		padding-top: 160px;
+		width: 230px;
+		height: 240px;
+	}
+	.jqqd-content .jqqd-img {
+		width: 100%;
+	}
+</style>

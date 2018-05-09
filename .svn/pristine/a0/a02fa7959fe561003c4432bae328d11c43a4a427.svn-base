@@ -1,0 +1,34 @@
+<template>
+  <div id="firstcomponent">
+    <mt-header fixed title="第一个测试页面">
+      <router-link to="/" slot="left">
+        <mt-button icon="back">返回</mt-button>
+      </router-link>
+      <mt-button icon="more" slot="right"></mt-button>
+    </mt-header>
+    <div class="banner">
+      <img src="../assets/banner1.png" alt="">
+    </div>
+    <h1>I am a title.</h1>
+    <a> written by {{ author }} </a>
+  </div>
+</template>
+
+<script type="text/javascript">
+export default {
+  name: 'firstcomponent',
+  data () {
+    return {
+      author: '微信公众号 jinkey-love'
+    }
+  }
+}
+</script>
+
+<style>
+  .banner img{
+    width: 100%;
+    height: 110px;
+    /*background: url('../assets/banner1.png') no-repeat fixed center;*/
+  }
+</style>

@@ -1,0 +1,174 @@
+<template>
+
+	<div>
+
+		<app-header title="服务申请">
+			<div slot='right' @click="save">
+				<label for="">保存</label>
+			</div>
+		</app-header>
+		<div class="itsq-main">
+			<div @click="xitong" class='itsq-item'>
+				<mt-cell title="请选择系统">
+					<span class="fa fa-angle-down"> </span>
+				</mt-cell>
+			</div>
+
+			<div @click="xitong" class='itsq-item'>
+				<mt-cell class='itsq-item' title="请选择系统标识">
+					<span class="fa fa-angle-down"> </span>
+				</mt-cell>
+			</div>
+			<div @click="xitong" class='itsq-item'>
+				<mt-cell class='itsq-item' title="请选择分类">
+					<span class="fa fa-angle-down"> </span>
+				</mt-cell>
+			</div>
+			<div @click="xitong" class='itsq-item'>
+				<mt-cell class='itsq-item' title="请选择模块">
+					<span class="fa fa-angle-down"> </span>
+				</mt-cell>
+			</div>
+
+			<div class="itsq-item itsq-description">
+				<mt-field label="描述" placeholder="请输入服务名称（不超过40字）" v-model="description"></mt-field>
+			</div>
+			<div class="itsq-item itsq-description">
+				<mt-field label="详情" placeholder="请输入详情（0-500）" v-model="detail">
+				</mt-field>
+			</div>
+			<div class="itsq-item itsq-img ">
+				<mt-cell title="上传图片">
+					<span class="itsq-plus"> </span>
+				</mt-cell>
+			</div>
+			<div class='itsq-jjsq'>
+				<label>
+					<input type="checkbox" name="" id="" value="" />
+					紧急申请
+				</label>
+			</div>
+			<div class="itsq-submit">
+				<mt-button type="primary" size="large">提交</mt-button>
+			</div>
+
+		</div>
+
+		<mt-popup v-model="xitongVisible" position="bottom">
+			
+			<div class="xitong-wrapper">
+				<!--<mt-picker :slots="slots" @change="onValuesChange"></mt-picker>-->
+				测试页面
+			</div>
+			
+		</mt-popup>
+
+	</div>
+</template>
+
+<script>
+	import AppHeader from "@/components/HeaderComponent";
+	import { Field } from 'mint-ui';
+	import { Cell } from 'mint-ui';
+	import { Buttons } from 'mint-ui';
+	import { Popups } from 'mint-ui';
+	import { Pickers } from 'mint-ui';
+	
+	export default {
+		name: 'ItsqComponent',
+		data: function() {
+			return {
+				description: "",
+				detail: "",
+				xitongVisible: false,
+			}
+		},
+		methods: {
+			save: function() {
+				alert("保存的方法");
+			},
+			xitong: function() {
+
+				this.xitongVisible = true
+				console.log(this.xitongVisible)
+			}
+		},
+		components: {
+			AppHeader,
+			Cell,
+			Field,
+			Buttons,
+			Popups,
+			Pickers
+		},
+	}
+</script>
+<style type="text/css">
+	.jqqd-main {
+		background: #f5f5f5;
+		width: 100%;
+		padding: 10px 0;
+		display: flex;
+		justify-content: flex-start;
+	}
+	
+	.itsq-item .mint-cell-wrapper {
+		background-size: 0;
+		text-align: left;
+	}
+	
+	.itsq-description {
+		margin: 10px 0;
+		border-top: 1px solid #d9d9d9;
+	}
+	
+	.itsq-description .mint-cell-title {
+		width: 60px;
+	}
+	
+	.itsq-img {
+		border-top: 1px solid #d9d9d9;
+	}
+	
+	.itsq-plus {
+		background: url(../../static/plus.png) no-repeat center;
+		background-size: contain;
+		display: block;
+		width: 25px;
+		height: 25px;
+	}
+	
+	.itsq-jjsq label {
+		display: flex;
+		padding: 10px;
+		align-items: center;
+		justify-content: flex-start;
+		font-size: 14px;
+	}
+	
+	.itsq-jjsq input[type='checkbox'] {
+		margin-right: 6px;
+		outline: none;
+		border: none;
+		background: #fff;
+		appearance: none;
+		border: 1px solid #d8d8d8;
+		width: 20px;
+		height: 20px;
+		border-radius: 3px;
+	}
+	
+	.itsq-jjsq input[type='checkbox']:checked {
+		background: url(../../static/checkbox_select.png) no-repeat center;
+		background-size: contain;
+	}
+	
+	.itsq-submit {
+		margin: 50px 10px 0;
+	}
+	.xitong-wrapper{
+		height: 300px;
+		width: 100%;
+		background: #fff;
+	}
+</style>

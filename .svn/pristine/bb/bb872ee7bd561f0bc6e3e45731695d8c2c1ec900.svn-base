@@ -1,0 +1,145 @@
+<template>
+
+  <div>
+    <app-header title="新建报销单"></app-header>
+
+<!--     <app-header title="新建报销单"></app-header>
+ -->
+    <div class="tjbxd-main">
+      <div class="xjbxd-tj">
+        <span>发表照片</span>
+      </div>
+      <div class="tjbxd-photo">
+        <div class="tjbxd-tjzp" v-for="(item,index) in photo">
+          <img v-bind:src="item.src" alt="">
+          <span @click="clear">×</span>
+        </div>
+        <div class="tjbxd-tjzp" @click="insert">
+          <img src="../assets/insert.png" alt="">
+        </div>
+      </div>
+      <div class="xjbxd-tj">
+        <span>对方支付信息</span>
+      </div>
+      <mt-field label="收款人：" placeholder="收款人姓名"></mt-field>
+      <mt-field label="银行：" placeholder="读取主数据开户行"></mt-field>
+      <mt-field label="银行账号：" placeholder="读取主数据银行信息"></mt-field>
+      <mt-field label="支付金额：" placeholder="自动合并"></mt-field>
+      <div class="bxxx-bottom xjbxd-button">
+        <mt-button class="button" type="primary" size="large" @click="submit">提交</mt-button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+  import AppHeader from "@/components/HeaderComponent";
+  export default {
+    name: 'TjbxdComponent',
+    data: function() {
+      return {
+        photo : [
+          {
+            id:'1',
+            src:'../../static/grxx.png'
+          }
+        ]
+      }
+    },
+    components: {
+      AppHeader
+    },
+    methods: {
+      submit: function () {
+
+      },
+      insert : function () {
+        alert(1)
+      },
+      clear : function () {
+        this.photo = [];
+      }
+    },
+  }
+</script>
+
+<style type="text/css">
+
+  .xjbxd-button .button{
+    background-color: #3a71dc !important;
+  }
+
+  .clear {
+    clear: both;
+  }
+
+  .tjbxd-main {
+    font-family: "微软雅黑";
+    width: 100%;
+    text-align: left;
+    font-size: 14px;
+    margin-bottom: 41px;
+  }
+
+  .tjbxd-main .mint-cell-wrapper {
+    font-size: 14px;
+  }
+
+  .tjbxd-photo {
+    width: 100%;
+    height: 80px;
+    background: white;
+  }
+
+  .tjbxd-tjzp {
+    width: 50px;
+    height: 50px;
+    margin-top: 15px;
+    margin-left: 10px;
+    float: left;
+    position: relative;
+  }
+
+  .tjbxd-tjzp span {
+    position: absolute;
+    top: -10px;
+    right: -5px;
+    background: #f7525f;
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    text-align: center;
+    line-height: 20px;
+    border-radius: 50%;
+    color: white;
+  }
+
+  .tjbxd-tjzp img {
+    width: 50px;
+    height: 50px;
+  }
+
+  .bxxx-bottom {
+    width: 100%;
+    height: 41px;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+  }
+
+  .xjbxd-tj {
+    height: 40px;
+    line-height: 40px;
+    color: #8c8c8c;
+  }
+
+  .xjbxd-tj span{
+    display: inline-block;
+    margin-left: 10px;
+  }
+
+  .xjbxd-button .mint-button {
+    border-radius: 0;
+  }
+
+</style>

@@ -1,0 +1,225 @@
+<template>
+
+	<div>
+    <app-header title="报销信息"></app-header>
+
+		<div class="bxxx-main" :style="pageh">
+      <mt-loadmore v-if="!noresult" :auto-fill="false" :top-method="loadTop" :bottom-method="loadBottom" :bottom-all-loaded="allLoaded" ref="loadmore" :top-distance='10' bottom-pull-text="上拉加载更多" bottom-drop-text="释放加载">
+        <router-link class="bxxx-list" v-for="(item, index) in BxxxList" :to='item.path' :key="index">
+          <div class="bxxx-list-top">
+            <span>{{item.approrgsfname}}</span>-
+            <span>{{item.applyEmpName}}</span>-
+            <span>{{item.remark}}</span>
+          </div>
+          <div class="bxxx-list-bottom">
+            <div class="bxxx-list-left">
+              <li>
+                报销类型：<span>{{item.billTypeName}}</span>
+              </li>
+              <li>
+                报销人：&nbsp;&nbsp;&nbsp;<span>{{item.forReimbursementName}}</span>
+              </li>
+              <li>
+                申请时间：<span>{{item.year}}年{{item.month}}月{{item.day}}日</span>
+              </li>
+            </div>
+            <div class="bxxx-list-right">
+              <li>金额</li>
+              <li>¥&nbsp;<span>{{item.billAmount}}</span></li>
+            </div>
+          </div>
+        </router-link>
+      </mt-loadmore>
+      <div class="noresult-wrap" v-else>
+        <img class="noresult-img" src="../../static/noresult.png">
+      </div>
+      <div class="bxxx-new" @click="xjbxd">
+        新建报销单
+      </div>
+		</div>
+	</div>
+</template>
+
+<script>
+  import AppHeader from "@/components/HeaderComponent";
+  import { httpGetBxxx } from "../utils/api.js"; //添加公共组件
+  import { State } from "../utils/api.js";
+  import { Loadmore } from 'mint-ui';
+	export default {
+		name: 'BxxxComponent',
+		data: function() {
+			return {
+        BxxxList : [],
+        pageh: {
+          height:State().pageh
+        },
+        noresult: false,
+        allLoaded: false,
+        PageSize: 10,
+        RowNum: 0
+			}
+		},
+		components: {
+      AppHeader,
+      Loadmore
+		},
+		methods: {
+      xjbxd: function () {
+        this.$router.push('/xjbxd');
+      },
+      loadTop: function() {
+        let self = this;
+        this.RowNum = 0;
+        this.getdata(function(lt) {
+          self.BxxxList = [];
+          lt.forEach(function(item) {
+            item.path = "/bxxx/" + item.billCode;
+            self.BxxxList.push(item);
+          });
+          self.allLoaded = false;
+          self.$refs.loadmore.onTopLoaded();
+          if(lt.length < self.PageSize) {
+            self.allLoaded = true;
+          }
+        }, true);
+      },
+      loadBottom: function() {
+        let self = this;
+        this.RowNum++;
+        this.getdata(function(lt) {
+          self.$refs.loadmore.onBottomLoaded();
+          if(lt.length < self.PageSize) {
+            self.allLoaded = true;
+          }
+        }, true);
+      },
+      getdata: function (fun, isshowload) {
+        let self = this;
+        httpGetBxxx("fss/billListPubAction_queryBillListOder.action?", {
+          empId: '00617301',
+          currentPage: self.RowNum,
+          pageSize : self.PageSize,
+          billTypeCode : '004'
+        }, function(result) {
+          if(!result.list || !result.list.length) {
+            if(!self.RowNum) self.noresult = true;
+            return;
+          }
+          if(self.noresult){
+            self.noresult = false;
+          }
+          result.list.forEach(function(item) {
+            item.path = "/bxxx/" + item.billCode;
+            item.year = item.applyDate.substring(0,4);
+            item.month = item.applyDate.substring(4,6);
+            item.day = item.applyDate.substring(6,8);
+            self.BxxxList.push(item);
+          });
+
+          if(fun) {
+            fun(result.list)
+          }
+        }, function() {}, isshowload);
+      }
+		},
+    mounted: function () {
+      let self = this;
+      this.getdata(function(lt){
+        if(lt.length < self.PageSize) {
+          self.allLoaded = true;
+        }
+      });
+    }
+	}
+</script>
+<style type="text/css">
+
+	.bxxx-main {
+    font-family: "微软雅黑";
+    width: 90%;
+    margin: 0 auto;
+    margin-bottom: 50px;
+    padding-top: 15px;
+    text-align: left;
+    font-size: 15px;
+    line-height: 150%;
+    overflow-y: auto;
+	}
+
+  .bxxx-list {
+    display: block;
+    width: 100%;
+    height: 150px;
+    background: url("../assets/bxdbk.png") no-repeat;
+    background-size:100% 100%;
+    margin-bottom: 10px;
+  }
+
+  .bxxx-list-top {
+    width: 90%;
+    height: 45px;
+    line-height: 50px;
+    margin: auto;
+    color: #282828;
+    font-weight: bold;
+    border-bottom: 1px dotted #dcdcdc;
+    overflow: hidden;
+    display: -webkit-box;
+    text-overflow: ellipsis;/*使用text-overflow以...代理超出文本*/
+    -webkit-line-clamp: 1;/*限制在一个块元素显示的文本的行数 必需与上面两个属性连用*/
+    -webkit-box-orient: vertical;/*从上向下垂直排列子元素。*/
+  }
+
+  .bxxx-list-bottom {
+    width: 90%;
+    margin:10px auto;
+    height: 20px;
+  }
+
+  .bxxx-list-left {
+    float: left;
+    width: 70%;
+    height: 80px;
+    font-size: 12px;
+    color: #8c8c8c;
+  }
+
+  .bxxx-list-right {
+    float: left;
+    width: 30%;
+    height: 80px;
+    text-align: right;
+  }
+
+  .bxxx-list-right li:nth-child(1) {
+    font-size: 12px;
+    margin-top: 25px;
+    color: #8c8c8c;
+  }
+
+  .bxxx-list-right li:nth-child(2) {
+    color: #282828;
+    font-weight: bold;
+  }
+
+  .bxxx-new{
+    width: 100%;
+    height: 50px;
+    background: #ffffff;
+    text-align: center;
+    line-height: 50px;
+    color: #6f97e5;
+    position: fixed;
+    left: 0;
+    bottom: 0;
+  }
+  .bxxx-main .noresult-wrap {
+    margin: 0 auto;
+    padding-top: 160px;
+    width: 160px;
+    height: 200px;
+  }
+  .bxxx-main .noresult-wrap .noresult-img {
+    width: 100%;
+  }
+</style>

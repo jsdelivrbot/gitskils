@@ -1,0 +1,304 @@
+<template>
+
+  <div>
+    <app-header title="考勤公示"></app-header>
+    <div class="kqgs-main">
+      <div class="kqgs-table" v-if="!noresult">
+        <div class="bxxq-approve-table" v-for="table in tables">
+          <div class="body" >
+            <div class="approve-table-two approve-table-five">
+              <div :class="tri==table.tr.length-1?'row tr-last':'row tr'" v-for="(tr,tri) in table.tr" @click="viewDetail(tr.empId)">
+                <div class="col-222">
+                  <span v-if="tri == 0">序号</span>
+                  <span v-if="tri != 0">{{tri}}</span>
+                </div>
+                <div class="col-222">
+                  <span>{{tr.empName}}</span>
+                </div>
+                <div class="col-222">
+                  <span>{{tr.Attendance}}</span>
+                </div>
+                <div class="col-222">
+                  <span>{{tr.Absence}}</span>
+                </div>
+                <div class="col-009">
+                  <span>{{tr.Holiday}}</span>
+                </div>
+                <div class="col-009">
+                  <span>{{tr.Rest}}</span>
+                </div>
+                <div class="col-009">
+                  <span>{{tr.Pay}}</span>
+                </div>
+                <div class="col-222">
+                  <span>{{tr.bigNight}}</span>
+                </div>
+                <div class="col-222">
+                  <span>{{tr.smallNight}}</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="noresult-wrap" v-else>
+        <img class="noresult-img" src="../../static/noresult.png">
+      </div>
+
+
+    </div>
+
+  </div>
+</template>
+
+<script>
+  import AppHeader from "@/components/HeaderComponent";
+  import { State } from "../utils/api.js";
+  import { httpGetMethod } from "../utils/api.js"; //添加公共组件
+  import { httpGetDzkq } from "../utils/api.js"; //添加公共组件
+  export default {
+    name: 'KComponent',
+    data: function() {
+      return {
+        noresult:true,
+        kqgs:[],
+        tables: [{
+          "title": "文本描述",
+          "editfield": "false",
+          "id": "1f88708e-4693-4670-93a9-40e56a4ad780",
+          "tr": [
+
+          ]
+        }
+        ],
+        KqgsList:{
+          empName:'姓名',
+          empId: 0,
+          Attendance:'出勤天数',
+          Absence:'缺勤天数',
+          Holiday:'节假日加班',
+          Rest:'休息日加班',
+          Pay:'付薪平日加班',
+          bigNight:'大夜班',
+          smallNight:'小夜班'
+        },
+        personData:{}
+      }
+    },
+    components: {
+      AppHeader
+    },
+    methods: {
+      //获取个人信息
+      getData() {
+        let self = this;
+        httpGetDzkq('hrs-kqs/app/getEmpGroupInfo.action?', {
+
+        }, function(result) {
+          self.personData = result.data;
+          self.getKqgs();
+        });
+      },
+
+      getKqgs() {
+        let self = this;
+        httpGetDzkq('hrs-kqs/app/getGroupPubInfo.action?', {
+          yearMonth:'201710',
+          orgCode2:self.personData.orgCode2,
+          orgCode:self.personData.orgCode,
+          currentPage:'1',
+          pageSize:'100',
+          groupNo:"3020579003"
+        }, function(result) {
+          console.log(result);
+          if(result.data) {
+            self.noresult = false;
+            result.data.sqList.datas.forEach(function(item,index) {
+              self.kqgs[index] = {
+                empName:item.empName,
+                empId:item.empId,
+                Attendance:'',
+                Absence:'',
+                Holiday:'',
+                Rest:'',
+                Pay:'',
+                bigNight:'',
+                smallNight:''
+              }
+              for(let i = 0;i<result.data.statList.length;i++) {
+                if(item.empId==result.data.statList[i].empId) {
+                  if(result.data.statList[i].sapCode == "realNumber") {
+                    self.kqgs[index].Attendance = result.data.statList[i].hrCount;
+                  }
+                  else if(result.data.statList[i].sapCode == "outNumber") {
+                    self.kqgs[index].Absence = result.data.statList[i].hrCount;
+                  }
+                  else if(result.data.statList[i].sapCode == "5501") {
+                    self.kqgs[index].Holiday = result.data.statList[i].hrCount;
+                  }
+                  else if(result.data.statList[i].sapCode == "5502") {
+                    self.kqgs[index].Rest = result.data.statList[i].hrCount;
+                  }
+                  else if(result.data.statList[i].sapCode == "5503") {
+                    self.kqgs[index].Pay = result.data.statList[i].hrCount;
+                  }
+                  else if(result.data.statList[i].sapCode == "5663") {
+                    self.kqgs[index].bigNight = result.data.statList[i].hrCount;
+                  }
+                  else if(result.data.statList[i].sapCode == "5677") {
+                    self.kqgs[index].smallNight = result.data.statList[i].hrCount;
+                  }
+                }
+              }
+            });
+            self.kqgs.unshift(self.KqgsList);
+            self.tables[0].tr = self.kqgs;
+          }
+          else {
+            self.noresult = true;
+          }
+        });
+      },
+      viewDetail: function (id) {
+        if(id) {
+          window.location.href = "#/kqcx/" + id;
+        }
+        else {
+          return;
+        }
+      }
+    },
+    mounted: function() {
+      this.getData();
+    }
+  }
+</script>
+<style type="text/css">
+  /*列表详情*/
+  .kqgs-table {
+    padding-top: 20px;
+  }
+
+  .kqgs-main .noresult-wrap {
+    margin: 0 auto;
+    padding-top: 160px;
+    width: 160px;
+    height: 200px;
+  }
+  .kqgs-main .noresult-wrap .noresult-img {
+    width: 100%;
+  }
+
+  .bxxq-approve-table {
+    background-color: white;
+    border-top: solid 1px #d8d8d8;
+  }
+
+  .bxxq-approve-table .body a {
+    color: #2982d5;
+    text-decoration: none;
+  }
+
+  .bxxq-approve-table .header {
+    height: 44px;
+    line-height: 44px;
+    margin-left: 10px;
+    margin-right: 10px;
+    color: #2982d5;
+    font-size: 16px;
+    background-color: #fff !important;
+    border-bottom: solid 1px #d8d8d8;
+  }
+
+  .bxxq-approve-table .header-unBottonLine {
+    height: 44px;
+    line-height: 44px;
+    margin-left: 10px;
+    margin-right: 10px;
+    color: #2982d5;
+    font-size: 16px;
+  }
+
+  .bxxq-approve-table .body {
+    border-bottom: solid 1px #d8d8d8;
+    padding-left: 10px;
+    padding-right: 10px;
+    font-size: 15px;
+  }
+
+  /*左右两列样式*/
+
+  .approve-table-two .tr {
+    /*margin-top: 7px;*/
+    /*margin-bottom: 7px;*/
+    padding: 7px 0;
+    border-bottom: 1px dotted #D8D8D8;
+  }
+
+  .approve-table-two .tr-last {
+    padding: 7px 0;
+  }
+
+  .approve-table-two .tr .first {
+    color: #777;
+  }
+
+  .approve-table-two .tr .notFirst {
+    color: #000;
+  }
+
+  .approve-table-two .tr-last .first {
+    color: #777;
+  }
+
+  .approve-table-two .tr-last .notFirst {
+    color: #000;
+  }
+
+  /*多列时以table方式展示*/
+
+  .approve-table-multiple {
+    width: 100%;
+    margin-top: 7px;
+    margin-bottom: 7px;
+  }
+  .approve-table-five{
+    text-align: center;
+  }
+
+  .approve-table-five>div:nth-child(1) {
+    font-weight: bold;
+    background: #f7fcff;
+  }
+
+  .row {
+    display: flex;
+    padding: 5px;
+    width: 100%;
+    align-items: center;
+  }
+
+  .kqgs-main .col-009{
+    -webkit-box-flex: 0;
+    -webkit-flex: 0 0 13.333%;
+    -moz-box-flex: 0;
+    -moz-flex: 0 0 13.333%;
+    -ms-flex: 0 0 13.333%;
+    flex: 0 0 13.333%;
+    max-width: 13.333%;
+  }
+
+  .kqgs-main .col-222{
+    -webkit-box-flex: 0;
+    -webkit-flex: 0 0 10%;
+    -moz-box-flex: 0;
+    -moz-flex: 0 0 10%;
+    -ms-flex: 0 0 10%;
+    flex: 0 0 10%;
+    max-width: 10%;
+  }
+
+</style>
+

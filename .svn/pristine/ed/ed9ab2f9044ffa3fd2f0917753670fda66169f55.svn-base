@@ -1,0 +1,260 @@
+<template>
+
+	<div>
+
+		<app-header title="服务申请">
+			<div slot='right' @click="save">
+				<label for="">保存</label>
+			</div>
+		</app-header>
+		<div class="itsq-main">
+			<div @click="ChoiceSystem" class='itsq-item'>
+				<mt-cell v-bind:title="system">
+					<span class="fa fa-angle-down"> </span>
+				</mt-cell>
+			</div>
+
+			<div @click="ChoiceSystemId" class='itsq-item'>
+				<mt-cell class='itsq-item' title="请选择系统标识">
+					<span class="fa fa-angle-down"> </span>
+				</mt-cell>
+			</div>
+			<div class='itsq-item'>
+				<mt-cell class='itsq-item' title="请选择分类">
+					<span class="fa fa-angle-down"> </span>
+				</mt-cell>
+			</div>
+			<div class='itsq-item'>
+				<mt-cell class='itsq-item' title="请选择模块">
+					<span class="fa fa-angle-down"> </span>
+				</mt-cell>
+			</div>
+
+			<div class="itsq-item itsq-description">
+				<mt-field label="描述" placeholder="请输入服务名称（不超过40字）" v-model="description"></mt-field>
+			</div>
+			<div class="itsq-item itsq-description">
+				<mt-field label="详情" placeholder="请输入详情（0-500）" v-model="detail">
+				</mt-field>
+			</div>
+			<div class="itsq-item itsq-img ">
+				<mt-cell title="上传图片">
+					<span class="itsq-plus"> </span>
+				</mt-cell>
+			</div>
+			<div class='itsq-jjsq'>
+				<label>
+					<input type="checkbox" name="" id="" value="" />
+					紧急申请
+				</label>
+			</div>
+			<div class="itsq-submit">
+				<mt-button type="primary" size="large">提交</mt-button>
+			</div>
+
+		</div>
+
+    <!--选择系统-->
+		<mt-popup v-model="SystemVisible" position="bottom" class="xitong-wrapper">
+      <div class="IT-navigation">
+        选择系统
+      </div>
+      <div>
+        <mt-picker :slots="slots1" @change="onValuesChange"></mt-picker>
+      </div>
+      <div>
+        <mt-button type="default" style="width: 50%;float: left;font-size: 14px">取消</mt-button>
+        <mt-button type="primary" style="width: 50%;float:left;font-size: 14px" @click="enSure">确定</mt-button>
+      </div>
+
+		</mt-popup>
+
+    <!--选择系统标识-->
+    <mt-popup v-model="SystemIdVisible" position="bottom" class="xitong-wrapper">
+      <div class="IT-navigation">
+        选择系统标识
+      </div>
+      <div>
+        <mt-picker :slots="slots2" @change="onValuesChange"></mt-picker>
+      </div>
+      <div>
+        <mt-button type="default" style="width: 50%;float: left;font-size: 14px">取消</mt-button>
+        <mt-button type="primary" style="width: 50%;float:left;font-size: 14px" @click="enSure">确定</mt-button>
+      </div>
+
+    </mt-popup>
+	</div>
+</template>
+
+<script>
+	import AppHeader from "@/components/HeaderComponent";
+	import { Field } from 'mint-ui';
+	import { Cell } from 'mint-ui';
+	import { Buttons } from 'mint-ui';
+	import { Popups } from 'mint-ui';
+	import { Pickers } from 'mint-ui';
+  import { httpGetMethod } from "../utils/api.js"; //添加公共组件
+  import { httpWebservice } from "../utils/api.js"; //添加公共组件
+
+	export default {
+		name: 'ItsqComponent',
+		data: function() {
+			return {
+				description: "",
+				detail: "",
+        SystemVisible: false,
+        SystemIdVisible:false,
+        SystemList:[],
+        systemCode:'',
+        systems:'',
+        system:'请选择系统',
+        slots1: [
+          {
+            flex: 1,
+            values: [],
+            className: 'slot1',
+            textAlign: 'left'
+          }
+        ],
+        slots2: [
+          {
+            flex: 1,
+            values: [],
+            className: 'slot1',
+            textAlign: 'left'
+          }
+        ]
+			}
+		},
+		methods: {
+			save: function() {
+				alert("保存的方法");
+			},
+      ChoiceSystem: function() {
+				this.SystemVisible = true
+				console.log(this.xitongVisible)
+			},
+      ChoiceSystemId : function () {
+
+      },
+      onValuesChange: function (picker, values) {
+        this.systems = values;
+      },
+      enSure: function () {
+        let self = this;
+        self.system = this.systems[0];
+        self.SystemVisible = false;
+        self.SystemList.forEach(function (item) {
+          if(self.system == item.SysName){
+            self.systemCode = item.SysCode;
+          }
+        })
+        httpWebservice("GetFormSubmitItemModulBySys",{
+          "systemCode":"self.systemCode"
+        },function(result){
+          console.log(result)
+        })
+      },
+      getSystem: function () {
+        let self = this;
+        httpWebservice("InitSystem",{
+          "userCode":"jing.wang1"
+        },function(result){
+          result.SystemListInfo.forEach(function (item) {
+            self.SystemList.push(item);
+          })
+          console.log(self.SystemList);
+          self.SystemList.forEach(function (item) {
+            self.slots1[0].values.push(item.SysName);
+          })
+        })
+      }
+    },
+    mounted: function () {
+		  let self = this;
+      this.getSystem();
+    },
+		components: {
+			AppHeader,
+			Cell,
+			Field,
+			Buttons,
+			Popups,
+			Pickers
+		}
+	}
+</script>
+<style type="text/css">
+	.jqqd-main {
+		background: #f5f5f5;
+		width: 100%;
+		padding: 10px 0;
+		display: flex;
+		justify-content: flex-start;
+	}
+
+	.itsq-item .mint-cell-wrapper {
+		background-size: 0;
+		text-align: left;
+	}
+
+	.itsq-description {
+		margin: 10px 0;
+		border-top: 1px solid #d9d9d9;
+	}
+
+	.itsq-description .mint-cell-title {
+		width: 60px;
+	}
+
+	.itsq-img {
+		border-top: 1px solid #d9d9d9;
+	}
+
+	.itsq-plus {
+		background: url(../../static/plus.png) no-repeat center;
+		background-size: contain;
+		display: block;
+		width: 25px;
+		height: 25px;
+	}
+
+	.itsq-jjsq label {
+		display: flex;
+		padding: 10px;
+		align-items: center;
+		justify-content: flex-start;
+		font-size: 14px;
+	}
+
+	.itsq-jjsq input[type='checkbox'] {
+		margin-right: 6px;
+		outline: none;
+		background: #fff;
+		appearance: none;
+		border: 1px solid #d8d8d8;
+		width: 20px;
+		height: 20px;
+		border-radius: 3px;
+	}
+
+	.itsq-jjsq input[type='checkbox']:checked {
+		background: url(../../static/checkbox_select.png) no-repeat center;
+		background-size: contain;
+	}
+
+	.itsq-submit {
+		margin: 50px 10px 0;
+	}
+	.xitong-wrapper{
+		height: auto;
+		width: 100%;
+		background: #fff;
+	}
+  .IT-navigation{
+    height:40px;
+    text-align: center;
+    line-height: 40px;
+    border-bottom: 1px solid #ebebeb;
+  }
+</style>

@@ -1,0 +1,136 @@
+<template>
+
+	<div>
+
+		<app-header title="服务查询"></app-header>
+
+		<div class="fwcx-main">
+
+			<div class="fwcx-item">
+				<mt-field label="服务单号" placeholder="请输入服务单号" v-model="applictionId"></mt-field>
+			</div>
+			<div class="fwcx-item">
+				<mt-field label="描述" placeholder="请输入相关描述" v-model="describe"></mt-field>
+			</div>
+			<div class="fwcx-item" @click="startTimeOpen">
+				<mt-field readonly disabled label="提报开始时间" placeholder="请选择开始时间" :value="pickerStartTime | formatDate">
+					<span class="fwcx-date"></span>
+				</mt-field>
+			</div>
+			<div class="fwcx-item" @click="entTimeOpen">
+				<mt-field readonly disabled label="提报结束时间" placeholder="请选择结束时间" :value="pickerEndTime | formatDate">
+					<span class="fwcx-date"></span>
+				</mt-field>
+			</div>
+
+		    <div  class="fwcx-item fwcx-search" @click="search">
+				<!-- <mt-button class="button_color" type="primary" size="large">查询</mt-button> -->
+				<mt-button class="button" type="primary" size="large" @click="search">查  询</mt-button>
+			</div>
+			<!-- <div class="fwcx-footer">
+				<mt-button class="button" type="primary" size="large" @click="search">查  询</mt-button>
+			</div> -->
+			<mt-datetime-picker ref="pickerstart" type="date" :startDate="startTime" :endDate="endTime" v-model="pickerStartTime" year-format="{value} 年" month-format="{value} 月" date-format="{value} 日">
+			</mt-datetime-picker>
+
+			<mt-datetime-picker ref="pickerend" type="date" :startDate="startEndTime" :endDate="endTime" v-model="pickerEndTime" year-format="{value} 年" month-format="{value} 月" date-format="{value} 日">
+			</mt-datetime-picker>
+
+		</div>
+
+	</div>
+</template>
+
+<script>
+	import AppHeader from "@/components/HeaderComponent";
+
+	import { DatetimePicker } from 'mint-ui';
+	import { Tool } from "../utils/tool.js";
+	import { State } from "../utils/api.js";
+	import { Field } from 'mint-ui';
+	import { Buttons } from 'mint-ui';
+
+	export default {
+		name: 'FwcxComponent',
+		data: function() {
+			return {
+				pagehight: State().pageh,
+				applictionId: "",
+				describe: "",
+				startTime: new Date("2007-01-01"),
+				endTime: new Date(),
+        startEndTime: new Date(),
+        pickerStartTime: '',
+        pickerEndTime: ''
+			}
+		},
+		components: {
+			AppHeader,
+			Field,
+			DatetimePicker,
+			Buttons
+		},
+		methods: {
+			startTimeOpen: function() {
+				this.$refs.pickerstart.open();
+			},
+			entTimeOpen: function() {
+			  this.startEndTime = this.pickerStartTime;
+        this.$refs.pickerend.open();
+			},
+			search:function(){
+			  if(this.applictionId == ''){
+          this.applictionId = ' ';
+        }
+        if(this.describe == ''){
+          this.describe = ' ';
+        }
+        this.$router.push("/cxjg" + "/" + this.pagehight + "/" + this.applictionId + "/" + this.describe + "/" + this.formatDate(this.pickerStartTime) + "/" + this.formatDate(this.pickerEndTime));
+      },
+      formatDate(time) {
+        let date = new Date(time);
+        return Tool.formate(date, 'yyyy-MM-dd')
+      }
+		},
+		filters: {
+			formatDate(time) {
+				let date = new Date(time);
+				return Tool.formate(date, 'yyyy-MM-dd')
+			}
+		}
+	}
+</script>
+<style type="text/css">
+
+	.button {
+      width: 100%;
+      background-color: #4c9beb !important;
+      margin: 0;
+    }
+
+	.fwcx-footer {
+	    width: 100%;
+	    position: absolute;
+	    bottom: 0;
+	    left: 0;
+	    background-color: #4c9beb !important;
+	}
+
+	.fwcx-item .mint-cell-wrapper {
+		background-size: 0;
+		text-align: left;
+	}
+	 .fwcx-search {
+	 	margin: 50px 10px 0;
+	 }
+	 .fwcx-date{
+	 	background: url(../../static/time.png) no-repeat center;
+		background-size: contain;
+		display: block;
+		width: 20px;
+		height: 20px;
+	 }
+	 input:disabled{
+	 	background:#fff;
+	 }
+</style>

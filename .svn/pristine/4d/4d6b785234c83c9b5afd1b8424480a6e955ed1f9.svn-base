@@ -1,0 +1,583 @@
+<template>
+
+	<div>
+
+		<app-header title="服务申请"></app-header>
+		<div class="itsq-main">
+      <div class="itsq-content" v-show="tab==1">
+        <!--选择服务分类-->
+        <div @click="ChoiceSystem(item.id)" class='itsq-item' v-for="(item,index) in serviceList" v-show="item.show">
+          <mt-cell v-bind:title="item.name">
+            <span class="fa fa-angle-right"></span>
+          </mt-cell>
+        </div>
+
+        <!--合同序号-->
+        <div class="itsq-item itsq-contract">
+          <mt-field label="合同序号" placeholder="请输入合同序号" v-model="contractNum"></mt-field>
+        </div>
+
+        <!--紧急申请和代提-->
+        <div class='itsq-item' v-for="(item,index) in switchList">
+          <mt-cell v-bind:title="item.name">
+            <mt-switch v-model="item.value" @change="turnApply(index,item.value)"></mt-switch>
+          </mt-cell>
+        </div>
+        </mt-radio>
+
+        <div v-if="mentionShow">
+          <!--来源人-->
+          <div class="itsq-item itsq-contract">
+            <mt-field label="来源人" placeholder="请输入来源人" v-model="sourcePerson"></mt-field>
+          </div>
+
+          <!--来源单位-->
+          <div class="itsq-item itsq-contract" @click="choiceCompany(2)">
+            <mt-field label="来源单位" readonly disabled placeholder="请选择来源单位" v-model="fromCompanyName"></mt-field>
+          </div>
+        </div>
+
+        <!--服务描述-->
+        <div class="itsq-item itsq-description" v-for="(item,index) in description">
+          <div class="itsq-description-title">
+            {{item.title}}
+          </div>
+          <mt-field :placeholder="'请输入详情0-'+item.num+'字'" type="textarea" rows="2" v-model="item.des" @input="descInput(item)">
+            <span class="itsq-description-span">{{item.remnant}}/{{item.num}}</span>
+          </mt-field>
+        </div>
+
+        <!--附件上传-->
+        <div class="itsq-item itsq-description">
+          <div class="itsq-description-title">
+            附件上传
+          </div>
+          <div class="itsq-img">
+            <li @touchstart="showDeleteButton(item)" @touchend="clearLoop" @click="viewImg" v-for="(item,index) in postImgList">
+              <img src="../../assets/banner3.png" alt="" class="itsq-postImg">
+              <span class="fa fa-times-circle delete-button" v-if="item.deleteImg" @click="deleteImgList(index)"></span>
+            </li>
+            <li>
+              <img src="../../assets/photo-icon.png" alt="" class="itsq-postImg" @click="photograph">
+            </li>
+            <div class="clear"></div>
+          </div>
+        </div>
+
+        <!--提交服务申请-->
+        <div class="itsq-submit">
+          <mt-button class="button" type="primary" size="large" @click="submit">提  交</mt-button>
+        </div>
+      </div>
+    </div>
+
+    <!--//选择来源单位界面-->
+    <div v-show="tab==2" class="itsq-choiceCompany">
+      <div class="itsq-XCSsearch">
+        <form action="javascript:return true;">
+          <input v-on:input="lydwSearches()" @keyup.enter="tosearch($event)" v-model="keyword" type="search" maxlength="20" placeholder="搜索">
+          <span class="fa fa-search"></span>
+          <i @click="clear" class="fa fa-times-circle" v-if="keyword"></i>
+        </form>
+      </div>
+      <div @click="choiceCompany(1)" class="itsq-choiceCompany-radio">
+      <mt-radio
+        align="left"
+        v-model="fromCompanyName"
+        :options="options"
+      >
+      </mt-radio>
+      </div>
+    </div>
+
+      <!--选择系统-->
+		<mt-popup v-model="serviceVisible" position="bottom" class="xitong-wrapper">
+      <div>
+        <mt-picker :slots="slots" @change="onValuesChangeService"></mt-picker>
+      </div>
+      <div>
+        <mt-button type="default" @click="cancelService">取消</mt-button>
+        <mt-button type="primary" @click="enSureService">确定</mt-button>
+      </div>
+
+		</mt-popup>
+
+    <!--拍照选择-->
+    <mt-actionsheet
+      :actions="actions"
+      v-model="sheetVisible">
+    </mt-actionsheet>
+
+	</div>
+</template>
+
+<script>
+	import AppHeader from "@/components/HeaderComponent";
+  import { httpGetMethod , httpWebservice } from "../../utils/api.js"; //添加公共组件
+  import { Tool } from "../../utils/tool.js"; //添加公共组件
+
+	export default {
+		name: 'ItsqComponent',
+		data: function() {
+			return {
+        fromCompanyName:'',
+			  tab:1,    //选项卡
+        contractNum:'',   //合同序号
+        companyName:'', mentionShow:false,   //来源单位
+        sourcePerson:'',   //来源人
+        keyword:'',      //来源单位关键字搜索
+        //			  弹出选择系统的操作
+        serviceVisible:false,
+        selectValue:'',
+        sign:'',
+
+        //服务描述以及详细描述
+        description:[
+          {
+            title:'服务描述',
+            des:'',
+            num:40,
+            remnant:0
+          },
+          {
+            title:'详情描述',
+            des:'',
+            num:500,
+            remnant:0
+          }
+        ],
+        //系统
+        serviceList:[
+          {
+            id:0,
+            name:'服务分类一',
+            show:true
+          },
+          {
+            id:1,
+            name:'服务分类二',
+            show:true
+          },
+          {
+            id:2,
+            name:'服务分类三',
+            show:true
+          },
+          {
+            id:3,
+            name:'服务分类四',
+            show:true
+          },
+          {
+            id:4,
+            name:'请选择系统标识',
+            show:true
+          },
+          {
+            id:5,
+            name:'请选择模块',
+            show:true
+          }
+        ],
+        //switch
+        switchList:[
+          {
+            name:'紧急申请',
+            value:false
+          },
+          {
+            name:'代提',
+            value:false
+          }
+        ],
+        options:['1','2','3'],
+        //拍照
+        sheetVisible:false,   //点击拍照弹出来的选项卡
+        actions:[
+          {
+            name:"拍照",
+            method:this.getCamer
+          },
+          {
+            name:"从相册中选择",
+            method:this.choicePhoto
+          }
+        ],
+        postImgList:[
+          {
+            deleteImg:false
+          },
+          {
+            deleteImg:false
+          }
+        ],
+        slots: [
+          {
+            flex: 1,
+            values: [],
+            className: 'slot1',
+            textAlign: 'left'
+          }
+        ]
+			}
+		},
+		methods: {
+//		  选择系统操作
+      onValuesChangeService: function (picker,values) {
+        this.selectValue = values[0];
+      },
+      enSureService: function () {
+        this.serviceList[this.sign].name = this.selectValue;
+        this.serviceVisible = false;
+      },
+      cancelService: function () {
+        this.serviceVisible = false;
+      },
+      ChoiceSystem: function (sign) {
+        this.slots[0].values = [];
+        this.serviceVisible = true;
+        this.sign = sign;
+        let self = this;
+        switch (sign) {
+          case 0:
+            this.slots[0].values = ['出国类','贷款类'];
+            break;
+          case 1:
+            this.slots[0].values = ['出国类','贷款类'];
+            break;
+          case 2:
+            this.slots[0].values = ['出国类','贷款类'];
+            break;
+          case 3:
+            this.slots[0].values = ['出国类','贷款类'];
+            break;
+          case 4:
+            this.slots[0].values = ['出国类','贷款类'];
+            break;
+          case 5:
+            this.slots[0].values = ['出国类','贷款类'];
+            break;
+        }
+      },
+
+      //选择来源单位切换
+      choiceCompany: function (id) {
+        this.tab = id;
+      },
+
+      turnApply: function (index,value) {
+        if(index==1) {
+          if (value) {
+            this.mentionShow = true;
+          }
+          else {
+            this.mentionShow = false;
+          }
+        }
+      },
+
+      //详情输入字数限制
+      descInput: function (obj) {
+        var txtVal = obj.des.length;
+        obj.remnant = obj.num - txtVal;
+        if(obj.remnant<0) {
+          Tool.alert("最多只能输入"+obj.num+'字');
+          obj.des = obj.des.substr(0,obj.num);
+        }
+      },
+
+      showDeleteButton: function (item) {
+        let self = this;
+        clearInterval(self.deleteButton);
+        this.deleteButton = setTimeout(function () {
+          item.deleteImg = true;
+        },1000)
+      },
+
+      //清除定时器
+      clearLoop: function () {
+        clearInterval(this.deleteButton);
+      },
+
+      viewImg: function () {
+        console.log(2)
+      },
+
+
+      deleteImgList: function (index) {
+        let self = this;
+        Tool.alert('你确定要删除吗？','',true,function () {
+          self.remove(self.postImgList,self.postImgList[index]);
+        })
+      },
+
+      remove: function (arr,item) {
+        if(arr.length){
+          var index = arr.indexOf(item);
+          if(index>-1){
+            return arr.splice(index,1)
+          }
+        }
+      },
+
+      //拍照
+      photograph:function () {
+        this.sheetVisible = true;
+      },
+
+      //      调取拍照
+      getCamer:function () {
+        let self = this;
+        window.SinopecAppPlugin.callHandler('openCamera', {'quality':1000, 'destinationType':0, 'allowedit': true, 'mediaType': 0, 'saveToPhotoAlbum': 1}, function(res) {
+
+        });
+      },
+
+      //调取相册功能
+      choicePhoto : function () {
+        let self = this;
+        window.SinopecAppPlugin.callHandler('openPictureLibrary', {'quality': 100, 'destinationType': 0}, function(res) {
+
+        });
+      },
+
+      //提交服务申请
+      submit: function () {
+
+      }
+    },
+    mounted: function () {
+
+    },
+    components: {
+			AppHeader
+		}
+	}
+</script>
+<style type="text/css">
+  .clear {
+    clear: both;
+  }
+
+  .button {
+    width: 100%;
+    background-color: #4c9beb !important;
+    margin: 0;
+  }
+
+	.itsq-item .mint-cell-wrapper {
+		background-size: 0;
+		text-align: left;
+	}
+
+  .itsq-main {
+    overflow-x: hidden;
+  }
+
+  .itsq-description {
+    background: white;
+    margin-top: 10px;
+    text-align: left;
+  }
+
+	.itsq-main .itsq-description .mint-cell-title {
+		width: 0;
+	}
+
+  .itsq-main .itsq-contract .mint-cell-title{
+    width: 70px;
+  }
+
+  textarea {
+    resize: none;
+  }
+
+  .itsq-main {
+    padding-top: 15px;
+  }
+
+	.itsq-plus {
+		background: url(../../../static/plus.png) no-repeat center;
+		background-size: contain;
+		display: block;
+		width: 25px;
+		height: 25px;
+	}
+
+	.itsq-jjsq label {
+		display: flex;
+		padding: 10px;
+		align-items: center;
+		justify-content: flex-start;
+		font-size: 14px;
+	}
+
+	.itsq-jjsq input[type='checkbox'] {
+		margin-right: 6px;
+		outline: none;
+		background: #fff;
+		appearance: none;
+		border: 1px solid #d8d8d8;
+		width: 20px;
+		height: 20px;
+		border-radius: 3px;
+
+	}
+
+	.itsq-jjsq input[type='checkbox']:checked {
+		background: url(../../../static/checkbox_select.png) no-repeat center;
+		background-size: contain;
+	}
+
+	.itsq-submit {
+		margin: 50px 10px 0;
+	}
+	.xitong-wrapper{
+		height: auto;
+		width: 100%;
+		background: #fff;
+	}
+  .xitong-wrapper .picker-slot.picker-slot-left {
+    text-align: center;
+  }
+  .IT-navigation{
+    height:40px;
+    text-align: center;
+    line-height: 40px;
+    border-bottom: 1px solid #ebebeb;
+  }
+  .xitong-wrapper .mint-button {
+    float: left;
+    width: 50%;
+    font-size: 16px;
+    box-shadow: 0 0;
+    border-radius: 0;
+  }
+  .xitong-wrapper .mint-button--primary {
+    background-color: #3d74d9;
+  }
+  .Companymodel {
+    width: 80%;
+    height: 100%;
+    background: #fafafc;
+    overflow-y: auto;
+    text-align: left;
+  }
+
+  .Companymodel button {
+    background: white;
+    border: none;
+  }
+
+  input:disabled {
+    background:#fff;
+  }
+
+  .Companymodel .mint-radiolist-label {
+    padding: 10px;
+  }
+
+  .Companymodel .mint-radio-core {
+    float: left;
+    margin-right: 10px;
+  }
+
+  .itsq-choiceCompany {
+    width: 100%;
+  }
+
+  .itsq-choiceCompany-radio {
+    text-align: left;
+  }
+
+  .itsq-description-span {
+    position: absolute;
+    bottom: -20px;
+    right: 5px;
+    color: #dddddd;
+  }
+
+  .itsq-description .mint-field.is-textarea .mint-cell-value {
+    border: 1px solid #dddddd;
+  }
+
+  .itsq-description-title {
+    padding: 0 10px;
+    height: 30px;
+    line-height: 30px;
+  }
+
+  .itsq-description .mint-cell-wrapper {
+    margin-bottom: 20px;
+  }
+
+  /*搜索框*/
+  .itsq-choiceCompany .itsq-XCSsearch {
+    width: 90%;
+    height:30px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  .itsq-choiceCompany .itsq-XCSsearch input {
+    width: 88%;
+    height:30px;
+    border: 1px solid #e9e9e9;
+    border-radius: 30px;
+    outline: none;
+    font-size: 7px;
+    padding-left: 12%;
+  }
+
+  .itsq-choiceCompany .itsq-XCSsearch span {
+    position: absolute;
+    top: 7px;
+    left:10%;
+    color: #ccc;
+  }
+
+  .itsq-choiceCompany .itsq-XCSsearch i{
+    position: absolute;
+    top: 7px;
+    right: 10%;
+    color: #ccc;
+    font-size: 15px;
+  }
+
+  input[type='search'] {
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  input[type=search]::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+  }
+
+  .itsq-img {
+    width: 90%;
+  }
+
+  .itsq-img li {
+    width: 70px;
+    height: 70px;
+    float: left;
+    margin: 10px;
+    border: 1px solid #dddddd;
+    position: relative;
+  }
+
+  .itsq-img li .itsq-postImg {
+    width: 40px;
+    height: 40px;
+    position: absolute;
+    top: 15px;
+    left: 15px;
+  }
+
+  .itsq-img li .delete-button {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+  }
+
+</style>

@@ -1,0 +1,386 @@
+<template>
+
+	<div>
+		<mt-header fixed title="企业年金">
+			<router-link to="/" slot="left">
+				<mt-button icon="back">返回</mt-button>
+				
+			</router-link>
+		</mt-header>
+		
+
+		<div class="qynj-main">
+
+		   <div class="head">
+		      <div class="head-l" v-on:click="preyear"><span class="fa fa-angle-left">&nbsp&nbsp上年</span></div>
+		         <div class="head-m"><span>{{year}}</span></div>
+			  <div class="head-r"  v-on:click="nextyear"><span class="fa fa-angle-right">下年&nbsp&nbsp</span></div>
+			  			
+		  </div>
+
+
+		  <div class="payment">
+			    <div class="payment-top">
+			      <span>当年缴费情况</span>
+			    </div>
+
+			    <div class="payment-content">
+
+			    <div class="payment-content-top">
+
+			       <div class="rr">
+			              <div class="jh0"><p>合计</p></div>
+                         <div class="sss"><span>&nbsp;&nbsp;{{list.yearTotal}}</span>&nbsp;&nbsp;元</div>
+
+                         </div>
+
+			    </div>
+			      <div class="payment-content-bottom">
+
+			        <div class="payment-content-bottom-l">
+			        <div class="payment-content-bottom-l-t"><span>企业缴费</span></div>
+			        <div class="payment-content-bottom-l-b"><span>{{list.corpPay}}</span>&nbsp;元</div>
+
+			        </div>
+
+
+			        <div class="payment-content-bottom-r">
+
+			          <div class="payment-content-bottom-r-t"><span>个人缴费</span></div>
+			        <div class="payment-content-bottom-r-b"><span>{{list.selfPay}}</span>&nbsp;元</div>
+
+                     </div>
+			    
+			      </div>
+
+			    </div>
+		  </div>
+
+
+		  <div class="storage">
+			  <div class="storage-top">
+			  <span>累计存储金额</span>
+			  </div>
+
+			    <div class="storage-content">
+
+			     <div class="storage-content-top">
+			              <div class="rr">
+			              <div class="jh"><p>合计</p></div>
+                         <div class="sss"><span>&nbsp;&nbsp;{{list.allPay}}</span>&nbsp;&nbsp;元</div>
+
+                         </div>
+			     </div>
+			      <div class="storage-content-bottom">
+
+
+			        <div class="storage-content-bottom-l">
+				        <div class="storage-content-bottom-l-t"><span>企业缴费</span></div>
+				        <div class="storage-content-bottom-l-b"><span>{{list.corpAllPay}}</span>&nbsp;元</div>
+
+			        </div>
+
+
+			          <div class="storage-content-bottom-r">
+
+			          <div class="storage-content-bottom-r-t"><span>个人缴费</span></div>
+			          <div class="storage-content-bottom-r-b"><span>{{list.selfAllPay}}</span>&nbsp;元</div>
+
+                     </div>
+
+			      </div>
+
+			      
+			    
+			    </div>
+		 </div>	
+
+		 	<div class="dibu">
+                
+               <div class="dibu-w">
+		 	   <div class="tb"><p>i</p></div>
+		       <div class="sj"><span>&nbsp&nbsp建立企业年金时间:&nbsp&nbsp2011-08</span></div>
+               </div>
+		   </div>	    
+
+		</div>
+
+	</div>
+</template>
+
+<script>
+	import { httpGetMethod } from "../utils/api.js"; //添加公共组件
+	import { Lazyload } from 'mint-ui';
+
+	export default {
+		name: 'QynjComponent',
+		data: function() {
+			return {
+				list:[],
+				year:new Date().getFullYear()/*获取当前年份*/
+			}
+		},
+		components: {
+
+		},
+		methods: {
+
+
+     
+        cshs:function(){    /*result接口返回的数据*/
+
+        	let self = this;
+        	httpGetMethod("/hrs-ess/app/getPension.action?",{
+			year:self.year
+			},function(result){
+				console.log(result)
+				self.list = result.data.data;
+				console.log(self.list)
+				
+			})
+
+        },
+
+			preyear:function(){
+
+		     this.year--;	
+
+		     this.cshs();/*调接口*/
+			
+		},
+
+			nextyear:function(){
+
+				this.year++;
+
+		
+		
+
+		   this.cshs();
+
+			}
+
+		},
+		mounted:function(){
+			console.log("页面启动");
+			this.cshs();
+			
+		},
+	
+
+
+
+	}
+</script>
+
+<style type="text/css">
+
+
+.fa-angle-right:before {
+  float: right;
+}
+
+.mint-header.is-fixed{
+	background: #3A71DC;
+}
+
+   .storage-content-top p{
+     line-height: 20px;
+   }
+
+  .jh,.jh0{
+     width:25px;
+     height:12px;
+     -webkit-border-radius:8px 8px ;
+     float: left;
+     background: #826552;
+     color:#E0CDB8;
+     margin-top:6px;
+     
+  }
+  .jh p,.jh0 p{
+  	max-height: 999999px;
+  	font-size: 6px;
+  }
+
+  .jh0{
+     
+     background: #4D555B;
+  }
+
+  .sss{
+  float: left;
+  }
+  .rr{
+     position: absolute;
+     left:20%;
+     bottom:30%;
+  }
+
+ 
+   .qynj-main{	
+	   background-color: #F5F5F5;
+	}
+	.head{
+	    width:100%;
+	    height:36px;
+	    background-color:#26A2FF;
+	    font-family: '微软雅黑';
+        font-size: 12px;
+        color: #FFFFFF;	
+        background: #3A71DC;
+	}
+
+	.head-l span{
+		  width: 40px;
+
+	}
+	.head-l{
+	  
+	  height: 20px;
+	 /* border:1px solid red;*/
+	  float: left;
+	  background-color:#26A2FF;
+      margin-left:10px;
+	  color: #FFFFFF;
+	  font-family: '微软雅黑';
+      font-size: 12px;
+      line-height: 30px;
+       background: #3A71DC;
+	}
+	.head-m {
+	 width: 40px;
+	 height: 20px;
+		/*border:1px solid  red;*/
+	  line-height: 33px;
+	  font-size: 16px;
+	  margin-left:95px; 
+	  float: left;
+	}
+	.head-r{
+		width: 40px;
+		height: 30px;
+		/*border:1px solid red;*/
+		 float:right;
+		 margin-right:10px;
+		 line-height: 30px;
+
+	}
+	.payment,.storage{
+	     margin: 0 auto;
+	     width:90%;
+	     height: 166px;
+	     margin-top:24px; 
+	     background-color:#FFFFFF;
+	     -webkit-border-radius:10px;
+	         
+	}
+       .payment{
+
+         color:#4D555B;
+       }
+       .storage{
+         color:#76604F;
+       }
+	 .payment-top{
+	   height:36px;
+	   background: #D8E3F8;
+	   -webkit-border-radius:10px 10px 0 0;
+	}
+
+	.payment-content-top,.storage-content-top{
+	     height:74px;
+	     position: relative;
+	}
+
+   .payment-content-top-w{
+      height: 74px;
+       position: absolute;
+       top:10%;
+   }
+	.payment-content-bottom,.storage-content-bottom{
+	    height:40px;
+	   font-family: '微软雅黑';
+       font-size: 10px;
+      
+	}
+
+	.payment-content-bottom-l-t,.payment-content-bottom-l-b,.storage-content-bottom-l-t,.storage-content-bottom-l-b{
+
+	  border-right:1px solid #ececec;  
+
+	}
+
+    .storage-top{
+       height:36px;
+       background: #F5EFE4;
+       -webkit-border-radius:8px 8px 0 0;
+
+    }
+    .payment-top,.storage-top{
+       font-family: '微软雅黑';
+       font-size: 12px;
+       color: #495B75;
+       line-height: 36px;
+    }
+
+    .storage-top{ 
+       color: #604124;   
+    }
+    .payment-content-top span,.storage-content-top span{
+
+     font-family: 微软雅黑;
+     font-size: 26px;
+
+    }
+
+    .payment-content-top p,.storage-content-top p{
+    	max-height: 999999px;
+        font-size: 6px;
+    }
+
+
+    .payment-content-bottom-l,.payment-content-bottom-r, .storage-content-bottom-l,.storage-content-bottom-r{
+       width:50%; 
+       float: left;
+
+    }
+
+   
+
+    .dibu {
+      
+     height: 197px;
+     font-family: 微软雅黑;
+     font-size: 10px;
+     color: #787878; 
+     position: relative;     	
+    }
+  
+    .tb{
+        width:14px;
+        height:14px;  
+        bottom:10%;
+        left:20%;
+        -webkit-border-radius:8px 8px ;
+        background:#787878;
+
+    }
+
+    .tb p{
+      color:#BCBCBC;
+    }
+
+    .sj,.tb{
+	   float: left;
+	  }
+	  .dibu-w{
+	    position: absolute;
+	    bottom:30%;
+	    left:20%;
+	  }
+
+
+
+
+</style>

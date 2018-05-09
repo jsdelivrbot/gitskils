@@ -1,0 +1,616 @@
+<template>
+
+  <div id="hong">
+    <app-header title="班组考勤查询"></app-header>
+    <div class="Bzkqxq-main">
+      <div class="Bzkqxq-main-top">
+        <div class="Bzkqxq-head">
+          <div class="Bzkqxq-head-left">
+            <div class="Bzkqxq-head-left-wrap">
+              <p class="Bzkqxq-head-left-content">{{personData.groupName}}</p>
+            </div>
+          </div>
+          <div class="Bzkqxq-head-right">
+            <span>{{pickerValue | formatDate}}</span>
+          </div>
+          <div class="clear"></div>
+        </div>
+      </div>
+
+      <!--按周显示-->
+      <div class="Bzkqxq-week" v-if="type==1">
+        <!--筛选条件-->
+        <div class="Bzkqxq-week-filter">
+          <div @click="previous">上一周</div>
+          <div @click="next">下一周</div>
+          <div @click="choiceMonth">按月</div>
+        </div>
+        <div class="bxxq-approve-table" v-for="table in tables">
+          <div class="body" >
+            <div v-if='table.columns=="8"' class="approve-table-two approve-table-five">
+              <div :class="tri==table.tr.length-1?'row tr-last':'row tr'" v-for="(tr,tri) in table.tr">
+                <div class="col-001">
+                  <span>{{tr.empName}}</span>
+                </div>
+                <div class="col-008">
+                  <span>{{tr.Monday}}</span>
+                </div>
+                <div class="col-008">
+                  <span>{{tr.Tuesday}}</span>
+                </div>
+                <div class="col-008">
+                  <span>{{tr.Wednesday}}</span>
+                </div>
+                <div class="col-008">
+                  <span>{{tr.Thursday}}</span>
+                </div>
+                <div class="col-008">
+                  <span>{{tr.Friday}}</span>
+                </div>
+                <div class="col-008">
+                  <span>{{tr.Saturday}}</span>
+                </div>
+                <div class="col-008">
+                  <span>{{tr.Sunday}}</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+      <!--按月显示-->
+      <div class="Bzkqxq-month" v-if="type==2">
+        <div v-if="!noresult">
+          <div class="bxxq-approve-table" v-for="table in tables">
+            <div class="body" >
+              <div v-if='table.columns=="9"' class="approve-table-two approve-table-five">
+                <div :class="tri==table.tr.length-1?'row tr-last':'row tr'" v-for="(tr,tri) in table.tr" @click="viewDetail(tr.empId)">
+                  <div class="col-222">
+                    <span v-if="tri == 0">序号</span>
+                    <span v-if="tri != 0">{{tri}}</span>
+                  </div>
+                  <div class="col-222">
+                    <span>{{tr.empName}}</span>
+                  </div>
+                  <div class="col-222">
+                    <span>{{tr.Attendance}}</span>
+                  </div>
+                  <div class="col-222">
+                    <span>{{tr.Absence}}</span>
+                  </div>
+                  <div class="col-009">
+                    <span>{{tr.Holiday}}</span>
+                  </div>
+                  <div class="col-009">
+                    <span>{{tr.Rest}}</span>
+                  </div>
+                  <div class="col-009">
+                    <span>{{tr.Pay}}</span>
+                  </div>
+                  <div class="col-222">
+                    <span>{{tr.bigNight}}</span>
+                  </div>
+                  <div class="col-222">
+                    <span>{{tr.smallNight}}</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="noresult-wrap" v-else>
+          <img class="noresult-img" src="../../static/noresult.png">
+        </div>
+      </div>
+    </div>
+
+  </div>
+</template>
+
+<script>
+  import AppHeader from "@/components/HeaderComponent";
+  import { State } from "../utils/api.js";
+  import { Tool } from "../utils/tool.js";
+  import { httpGetDzkq } from "../utils/api.js"; //添加公共组件
+  export default {
+    name: 'BzkqxqComponent',
+    data: function() {
+      return {
+        pickerValue:new Date(Date.parse(Tool.formatTime(this.$route.params.date,2).replace(/-/g, "/"))),
+        type:this.$route.params.type,
+        noresult:true,
+        personData:{},
+        week:[],
+        month:[],
+        day:[],
+        totalDay:'',
+        monthList:{
+          empName:'姓名',
+          empId:0,
+          Attendance:'出勤天数',
+          Absence:'缺勤天数',
+          Holiday:'节假日加班',
+          Rest:'休息日加班',
+          Pay:'付薪平日加班',
+          bigNight:'大夜班',
+          smallNight:'小夜班'
+        },
+        tables: [{
+          "columns":9,
+          "tr": [
+
+          ]
+        },
+          {
+            "columns":8,
+            "tr": [
+
+            ]
+          }
+        ]
+      }
+    },
+    components: {
+      AppHeader
+    },
+    methods: {
+      choiceMonth :function () {
+        this.type = 2;
+        this.getBzMonth();
+      },
+      //获取个人信息
+      getData() {
+        let self = this;
+        httpGetDzkq('hrs-kqs/app/getEmpGroupInfo.action?', {
+
+        }, function(result) {
+          self.personData = result.data;
+          if(self.type==1) {
+            self.init();
+          }
+          else {
+            self.getBzMonth();
+          }
+        });
+      },
+
+      //下一周
+      next: function () {
+        if(this.day[6]>this.totalDay) {
+          return
+        }
+        else {
+          this.week = [];
+          for(var i = 0;i<this.day.length;i++) {
+            this.day[i] = Number(this.day[i]);
+
+          }
+          for(var i = 0;i<this.day.length;i++) {
+            if(this.day[i] == '') {
+              this.day.splice(i,1,this.day[6]+i+1);
+            }
+            else {
+              this.day.splice(i,1,this.day[i]+7);
+            }
+
+          }
+          this.getBzWeek(this.day);
+        }
+      },
+
+      //上一周
+      previous: function () {
+        if(this.day[0]==''||this.day[0]==1) {
+          return;
+        }
+        else {
+          this.week = [];
+          for(var i = 0;i<this.day.length;i++) {
+            if(this.day[i]<8) {
+              this.day[i] = '';
+            }
+            else {
+              this.day.splice(i,1,this.day[i]-7);
+            }
+
+          }
+          this.getBzWeek(this.day);
+        }
+      },
+
+      //初始化按周查询
+      init: function () {
+        //获取这个月有多少天
+        let curDate = new Date(Tool.formatTime(this.$route.params.date,2) + '-' + 1);
+        let curMonth = curDate.getMonth();
+        /*  生成实际的月份: 由于curMonth会比实际月份小1, 故需加1 */
+        curDate.setMonth(curMonth + 1);
+        curDate.setDate(0);
+        this.totalDay = curDate.getDate();
+
+        let num = new Date(Tool.formatTime(this.$route.params.date,2) + '-' + 1).getDay();
+        let array = [1,2,3,4,5,6,7];
+        for(let i = 0;i<num-1;i++) {
+          array.unshift('');
+        };
+        array = array.slice(0,7);
+        this.day = array;
+        this.getBzWeek(this.day);
+      },
+
+      //班组按周查询
+      getBzWeek(array) {
+        let self = this;
+        httpGetDzkq('hrs-kqs/app/getGroupListInfo.action?', {
+//          yearMonth:Tool.formatTime(self.$route.params.date,1),
+          yearMonth:'201710',
+          orgCode2:self.personData.orgCode2,
+          orgCode:self.personData.orgCode,
+          currentPage:'1',
+          pageSize:'1000',
+          groupNo:"3020579002"
+        }, function(result) {
+          result.data.datas.forEach(function (item,index) {
+            self.week[index] = {
+              empName:item.empName
+            };
+            for(let it in item) {
+              if(it.match("day")) {
+                if(it.substr(3,2)==array[0]) {
+                  self.week[index].Monday = item[it];
+                }
+                else if(it.substr(3,2)==array[1]) {
+                  self.week[index].Tuesday = item[it];
+                }
+                else if(it.substr(3,2)==array[2]) {
+                  self.week[index].Wednesday = item[it];
+                }
+                else if(it.substr(3,2)==array[3]) {
+                  self.week[index].Thursday = item[it];
+                }
+                else if(it.substr(3,2)==array[4]) {
+                  self.week[index].Friday = item[it];
+                }
+                else if(it.substr(3,2)==array[5]) {
+                  self.week[index].Saturday = item[it];
+                }
+                else if(it.substr(3,2)==array[6]) {
+                  self.week[index].Sunday = item[it];
+                }
+              }
+            }
+          })
+          for(var i = 0;i<array.length;i++) {
+            if(array[i]<10&&array[i]) {
+              array[i] = '0' + array[i];
+            }
+          }
+          self.week.unshift({
+            empName:'姓名',
+            Monday: '周一' + array[0],
+            Tuesday: array[1]<=self.totalDay?'周二' + array[1]:'周二',
+            Wednesday: array[2]<=self.totalDay?'周三' + array[2]:'周三',
+            Thursday: array[3]<=self.totalDay?'周四' + array[3]:'周四',
+            Friday: array[4]<=self.totalDay?'周五' + array[4]:'周五',
+            Saturday: array[5]<=self.totalDay?'周六' + array[5]:'周六',
+            Sunday: array[6]<=self.totalDay?'周日' + array[6]:'周日'
+          });
+          self.tables[1].tr = self.week;
+        });
+      },
+
+      //班组按月查询
+      getBzMonth() {
+        let self = this;
+        httpGetDzkq('hrs-kqs/app/getGroupStatInfo.action?', {
+          yearMonth:Tool.formatTime(self.$route.params.date,1),
+          orgCode2:self.personData.orgCode2,
+          orgCode:self.personData.orgCode,
+          currentPage:'1',
+          pageSize:'1000',
+          groupNo:"3020579003"
+        }, function(result) {
+          if(result.data) {
+            self.noresult = false;
+            result.data.sqList.datas.forEach(function(item,index) {
+              self.month[index] = {
+                empName:item.empName,
+                empId:item.empId,
+                Attendance:'',
+                Absence:'',
+                Holiday:'',
+                Rest:'',
+                Pay:'',
+                bigNight:'',
+                smallNight:''
+              }
+              for(let i = 0;i<result.data.statList.length;i++) {
+                if(item.empId==result.data.statList[i].empId) {
+                  if(result.data.statList[i].sapCode == "realNumber") {
+                    self.month[index].Attendance = result.data.statList[i].hrCount;
+                  }
+                  else if(result.data.statList[i].sapCode == "outNumber") {
+                    self.month[index].Absence = result.data.statList[i].hrCount;
+                  }
+                  else if(result.data.statList[i].sapCode == "5501") {
+                    self.month[index].Holiday = result.data.statList[i].hrCount;
+                  }
+                  else if(result.data.statList[i].sapCode == "5502") {
+                    self.month[index].Rest = result.data.statList[i].hrCount;
+                  }
+                  else if(result.data.statList[i].sapCode == "5503") {
+                    self.month[index].Pay = result.data.statList[i].hrCount;
+                  }
+                  else if(result.data.statList[i].sapCode == "5663") {
+                    self.month[index].bigNight = result.data.statList[i].hrCount;
+                  }
+                  else if(result.data.statList[i].sapCode == "5677") {
+                    self.month[index].smallNight = result.data.statList[i].hrCount;
+                  }
+                }
+              }
+            });
+            self.month.unshift(self.monthList);
+            self.tables[0].tr = self.month;
+          }
+          else {
+            self.noresult = true;
+          }
+        });
+      },
+
+      //明细跳转
+      viewDetail: function (id) {
+        if(id) {
+          window.location.href = "#/kqcx/" + id;
+        }
+        else {
+          return;
+        }
+      }
+    },
+    mounted: function() {
+      this.getData();
+    },
+    filters: {
+      formatDate(time) {
+        let date = new Date(time);
+        return Tool.formate(date, 'yyyy年MM月')
+      }
+    }
+  }
+</script>
+<style type="text/css">
+  .clear {
+    clear: both;
+  }
+
+  .Bzkqxq-main-top {
+    width: 100%;
+    height: 70px;
+    background: white;
+  }
+
+  .Bzkqxq-head {
+    width: 90%;
+    margin: 0 auto;
+  }
+
+  .Bzkqxq-head-left {
+    width: 70%;
+    height: 70px;
+    float: left;
+    position: relative;
+    display: table;
+    text-align: left;
+    font-size: 17px;
+    font-weight: bold;
+  }
+
+  .Bzkqxq-head-left-wrap{
+    display: table-cell;
+    vertical-align: middle;
+    *position:absolute;
+    *top: 50%;
+    *left: 0;
+  }
+
+  .Bzkqxq-head-left-content {
+    *position: relative;
+    *top: -50%;
+    *left: 0;
+    max-height: 70px;
+    display: -webkit-box;
+    text-overflow: ellipsis;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .Bzkqxq-head-right {
+    width: 30%;
+    float: left;
+    line-height: 70px;
+    font-size: 14px;
+    text-align: right;
+  }
+
+  /*日期控件只显示年月*/
+  .Bzkqxq-main .picker-items .picker-slot.picker-slot-center:nth-child(3) {
+    display: none;
+  }
+
+  .Bzkqxq-month {
+    margin-top: 20px;
+  }
+
+  .Bzkqxq-week-filter {
+    width: 90%;
+    height:50px;
+    margin: 0 auto;
+  }
+
+  .Bzkqxq-week-filter div {
+    width: 80px;
+    height: 30px;
+    background: white;
+    margin-top: 10px;
+    margin-right: 15px;
+    float: left;
+    border-radius: 20px;
+    text-align: center;
+    line-height: 30px;
+  }
+
+  .Bzkqxq-week-filter div:nth-child(3) {
+    width: 60px;
+  }
+
+  /*列表详情*/
+
+  .Bzkqxq-main .noresult-wrap {
+    margin: 0 auto;
+    padding-top: 160px;
+    width: 160px;
+    height: 200px;
+  }
+  .Bzkqxq-main .noresult-wrap .noresult-img {
+    width: 100%;
+  }
+
+  .bxxq-approve-table {
+    background-color: white;
+    border-top: solid 1px #d8d8d8;
+  }
+
+  .bxxq-approve-table .body a {
+    color: #2982d5;
+    text-decoration: none;
+  }
+
+  .bxxq-approve-table .header {
+    height: 44px;
+    line-height: 44px;
+    margin-left: 10px;
+    margin-right: 10px;
+    color: #2982d5;
+    font-size: 16px;
+    background-color: #fff !important;
+    border-bottom: solid 1px #d8d8d8;
+  }
+
+  .bxxq-approve-table .header-unBottonLine {
+    height: 44px;
+    line-height: 44px;
+    margin-left: 10px;
+    margin-right: 10px;
+    color: #2982d5;
+    font-size: 16px;
+  }
+
+  .bxxq-approve-table .body {
+    border-bottom: solid 1px #d8d8d8;
+    padding-left: 10px;
+    padding-right: 10px;
+    font-size: 15px;
+  }
+
+  /*左右两列样式*/
+
+  .approve-table-two .tr {
+    /*margin-top: 7px;*/
+    /*margin-bottom: 7px;*/
+    padding: 7px 0;
+    border-bottom: 1px dotted #D8D8D8;
+  }
+
+  .approve-table-two .tr-last {
+    padding: 7px 0;
+  }
+
+  .approve-table-two .tr .first {
+    color: #777;
+  }
+
+  .approve-table-two .tr .notFirst {
+    color: #000;
+  }
+
+  .approve-table-two .tr-last .first {
+    color: #777;
+  }
+
+  .approve-table-two .tr-last .notFirst {
+    color: #000;
+  }
+
+  /*多列时以table方式展示*/
+
+  .approve-table-multiple {
+    width: 100%;
+    margin-top: 7px;
+    margin-bottom: 7px;
+  }
+  .approve-table-five{
+    text-align: center;
+  }
+
+  .approve-table-five>div:nth-child(1) {
+    font-weight: bold;
+    background: #f7fcff;
+  }
+
+  /*.approve-table-five>div:nth-child(odd) {*/
+  /*background: #f7f7f7;*/
+  /*}*/
+
+  .row {
+    display: flex;
+    padding: 5px;
+    width: 100%;
+    align-items: center;
+  }
+
+  .Bzkqxq-main .col-009{
+    -webkit-box-flex: 0;
+    -webkit-flex: 0 0 13.333%;
+    -moz-box-flex: 0;
+    -moz-flex: 0 0 13.333%;
+    -ms-flex: 0 0 13.333%;
+    flex: 0 0 13.333%;
+    max-width: 13.333%;
+  }
+
+  .Bzkqxq-main .col-222{
+    -webkit-box-flex: 0;
+    -webkit-flex: 0 0 10%;
+    -moz-box-flex: 0;
+    -moz-flex: 0 0 10%;
+    -ms-flex: 0 0 10%;
+    flex: 0 0 10%;
+    max-width: 10%;
+  }
+
+  .col-008{
+    -webkit-box-flex: 0;
+    -webkit-flex: 0 0 11.5%;
+    -moz-box-flex: 0;
+    -moz-flex: 0 0 11.5%;
+    -ms-flex: 0 0 11.5%;
+    flex: 0 0 11.5%;
+    max-width: 11.5%;
+  }
+
+  .Bzkqxq-main .col-001{
+    -webkit-box-flex: 0;
+    -webkit-flex: 0 0 19.5%;
+    -moz-box-flex: 0;
+    -moz-flex: 0 0 19.5%;
+    -ms-flex: 0 0 19.5%;
+    flex: 0 0 19.5%;
+    max-width: 19.5%;
+  }
+</style>

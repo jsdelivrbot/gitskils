@@ -1,0 +1,186 @@
+<template>
+
+  <div>
+    <app-header title="班组考勤查询"></app-header>
+    <div class="bzkqcx-main" :style="pageh">
+      <div class="bzkqcx-search">
+        <div class="bzkqcx-search-left">
+          <span>月份</span>
+          <span class="bzkqcx-search-span" @click="startTimeOpen">
+            <span>{{pickerStartTime | formatDate}}</span>
+            <span class="fa fa-angle-down fa-lg"></span>
+          </span>
+        </div>
+        <div class="bzkqcx-search-right">
+          <span>类型</span>
+          <span class="bzkqcx-search-span" @click="ChoiceTypeOpen">
+            <span>{{type}}</span>
+            <span class="fa fa-angle-down fa-lg"></span>
+          </span>
+        </div>
+        <div class="clear"></div>
+      </div>
+      <div class="bzkqcx-main-button">
+        <mt-button class="button" type="primary" size="normal" @click="search">查  询</mt-button>
+      </div>
+      <mt-datetime-picker ref="pickerstart" v-model="pickerStartTime" :startDate="startTime" :endDate="endTime" type="date" year-format="{value}年" month-format="{value}月">
+      </mt-datetime-picker>
+
+      <!--选择类型-->
+      <mt-popup v-model="TypeVisible" position="bottom" class="xitong-wrapper">
+        <div>
+          <mt-picker :slots="slots" @change="onValuesChangeType"></mt-picker>
+        </div>
+        <div>
+          <mt-button type="default" @click="cancelType">取消</mt-button>
+          <mt-button type="primary" @click="enSureType">确定</mt-button>
+        </div>
+      </mt-popup>
+    </div>
+  </div>
+</template>
+
+<script>
+  import AppHeader from "@/components/HeaderComponent";
+  import { State } from "../utils/api.js";
+  import { Tool } from "../utils/tool.js";
+  import { httpGetDzkq } from "../utils/api.js"; //添加公共组件
+  export default {
+    name: 'BzkqcxComponent',
+    data: function() {
+      return {
+        pageh: {
+          "min-height": State().wh - 44 + "px"
+        },
+        startTime: new Date("2012-01-01"),
+        endTime: new Date(),
+        pickerStartTime:'',
+        TypeVisible:false,
+        types:'',
+        type:'周',
+        style:'',
+        slots: [
+          {
+            flex: 1,
+            values: [],
+            className: 'slot1',
+            textAlign: 'left'
+          }
+        ],
+      }
+    },
+    components: {
+      AppHeader
+    },
+    methods: {
+      startTimeOpen: function() {
+        this.$refs.pickerstart.open();
+      },
+      ChoiceTypeOpen: function () {
+        this.slots[0].values = ["周","月度"];
+        this.TypeVisible = true;
+      },
+      search : function () {
+        if(this.type=='周') {
+          this.style = 1;
+        }
+        else {
+          this.style = 2;
+        }
+        this.$router.push("/bzkqdetail" + "/" + this.pickerStartTime + '/' + this.style);
+      },
+      onValuesChangeType: function (picker,values) {
+        this.types = values;
+      },
+      enSureType : function () {
+        this.type = this.types[0];
+        this.TypeVisible = false;
+      },
+      cancelType: function () {
+        this.TypeVisible = false;
+      },
+    },
+    mounted: function() {
+
+    },
+    filters: {
+      formatDate(time) {
+        let date = new Date(time);
+        return Tool.formate(date, 'yyyy年MM月')
+      }
+    }
+  }
+</script>
+<style type="text/css">
+  .clear {
+    clear: both;
+  }
+
+  .bzkqcx-main {
+    width: 100%;
+    background: white;
+  }
+
+  .bzkqcx-search {
+    width: 90%;
+    height: 60px;
+    margin: 0 auto;
+    padding-top: 20px;
+    font-size: 14px;
+  }
+
+  .bzkqcx-search-left {
+    float: left;
+  }
+
+  .bzkqcx-search-right {
+    float: right;
+  }
+
+  .bzkqcx-search-span {
+    display: inline-block;
+    width: 105px;
+    height: 30px;
+    border: 1px solid #b8b8b8;
+    border-radius: 5px;
+    text-align: center;
+    line-height: 30px;
+    color: #b8b8b8;
+  }
+
+  /*日期控件只显示年月*/
+  .bzkqcx-main .picker-items .picker-slot.picker-slot-center:nth-child(3) {
+    display: none;
+  }
+
+  .bzkqcx-main-button .mint-button {
+    width: 40%;
+    background: #3b71dd;
+  }
+
+  .xitong-wrapper{
+    height: auto;
+    width: 100%;
+    background: #fff;
+  }
+  .xitong-wrapper .picker-slot.picker-slot-left {
+    text-align: center;
+  }
+  .IT-navigation{
+    height:40px;
+    text-align: center;
+    line-height: 40px;
+    border-bottom: 1px solid #ebebeb;
+  }
+  .xitong-wrapper .mint-button {
+    float: left;
+    width: 50%;
+    font-size: 16px;
+    box-shadow: 0 0;
+    border-radius: 0;
+  }
+  .xitong-wrapper .mint-button--primary {
+    background-color: #3d74d9;
+  }
+</style>
+

@@ -1,0 +1,104 @@
+<template>
+
+  <div>
+    <app-header title="新建报销单"></app-header>
+
+    <div class="bxxq-main">
+      <div>
+        <div class="xjbxd-jbxx">
+          <span>基本信息</span>
+        </div>
+        <mt-field label="单据类型：" placeholder="请输入单据类型" v-model="type"></mt-field>
+        <mt-field label="申请人：" placeholder="请输入申请日期" v-model="type"></mt-field>
+        <mt-field label="申请日期：" placeholder="请输入报销人" v-model="type"></mt-field>
+        <mt-field label="费用部门：" placeholder="请输入费用部门" v-model="type"></mt-field>
+        <mt-field label="成本中心：" placeholder="请输入成本中心" v-model="type"></mt-field>
+        <mt-field label="业务种类：" placeholder="只能填写大于0的数字" type="number"></mt-field>
+        <mt-field label="申请事由：" placeholder="请填写"></mt-field>
+      </div>
+
+      <div class="xjbxd-jbxx">
+        <span>费用信息</span>
+      </div>
+      <div>
+        <div class="xjbxd-jbxx">
+          <span>支付信息</span>
+        </div>
+        <mt-field label="收款人：" placeholder="收款人姓名"></mt-field>
+        <mt-field label="员工编号：" placeholder="读取主数据开户行"></mt-field>
+        <mt-field label="身份证号：" placeholder="读取主数据银行信息"></mt-field>
+        <mt-field label="收款账号：" placeholder="自动合并"></mt-field>
+        <mt-field label="收款账号：" placeholder="收款行名称"></mt-field>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+  import AppHeader from "@/components/HeaderComponent";
+  import { DatetimePicker } from 'mint-ui';
+  import { Tool } from "../utils/tool.js";
+  export default {
+    name: 'BxxqComponent',
+    data: function() {
+      return {
+        name:'费用项目：',
+        expenseVisible:false,
+        pickerTime:'',
+        startTime: new Date("2007-01-01"),
+        endTime: new Date(),
+        type:'',
+        slots: [
+          {
+            flex: 1,
+            values: [],
+            className: 'slot1',
+            textAlign: 'left'
+          }
+        ],
+        invoice:[
+          {
+
+          }
+        ]
+      }
+    },
+    components: {
+      AppHeader
+    },
+    methods: {
+      nextStep: function () {
+        this.$router.push('/tjbxd');
+      },
+      TimeOpen: function () {
+        this.$refs.pickerTime.open();
+      },
+      expenseShow: function () {
+        this.expenseVisible = true;
+      },
+      onValuesChangeExpense : function () {
+
+      }
+    },
+    filters: {
+      formatDate(time) {
+        let date = new Date(time);
+        return Tool.formate(date, 'yyyy-MM-dd')
+      }
+    }
+  }
+</script>
+<style type="text/css">
+  .bxxq-main {
+    font-family: "微软雅黑";
+    width: 100%;
+    text-align: left;
+    font-size: 14px;
+    margin-bottom: 40px;
+  }
+
+  .xjbxd-main .mint-cell-wrapper {
+    font-size: 14px;
+  }
+
+</style>

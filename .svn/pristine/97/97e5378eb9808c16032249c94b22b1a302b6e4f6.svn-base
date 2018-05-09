@@ -1,0 +1,209 @@
+<template>
+
+	<div>
+
+		<app-header title="通讯录" >
+		  <div slot='right' @click="backsearch">
+        <span class="fa fa-search txl-search"></span>
+      </div>
+		</app-header>
+		<div class="txlxq-main">
+
+      <mt-loadmore :top-method="loadTop" :bottom-method="loadBottom" :bottom-all-loaded="allLoaded" ref="loadmore">
+        <ul class="txl-uls">
+          <li class="txl-lis" v-for="(list,index) in lists">
+            <div class="txl-headers" @click="updown(index)">
+              <div class="txl-linumber">{{index+1}}</div>
+              <div class="txl-liname">{{list.empName}}</div>
+              <div class="txl-licompany">{{list.deptName}}</div>
+              <span class="fa fa-angle-up" :class="{'fa-angle-down': index!=flag}"></span>
+            </div>
+            <div class="txl-contents" v-show="index==flag">
+              <div>
+                <div>性别：</div><div>{{list.gender}}</div>
+              </div>
+              <div>
+                <div>职务：</div><div>{{list.duty}}</div>
+              </div>
+              <div>
+                <div>出生年月：</div><div>{{list.birth}}</div>
+              </div>
+              <div>
+                <div>分管工作：</div><div>{{list.work}}</div>
+              </div>
+              <div>
+                <div>办公电话：</div><div><a @click="phoneCall(list.fullTel)">{{list.fullTel}}</a></div>
+              </div>
+              <div>
+                <div>手机号码：</div><div><a @click="phoneCall(list.mobile)">{{list.mobile}}</a></div>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </mt-loadmore>
+
+		</div>
+
+
+	</div>
+</template>
+
+<script>
+	import AppHeader from "@/components/HeaderComponent";
+	import { Toast } from 'mint-ui';
+	import { httpGetMethod } from "../utils/api.js"; //添加公共组件
+	export default {
+		name: 'TxlListComponent',
+		data: function() {
+			return {
+			  dataUrl:{},
+        RowNum:0,//页码
+        PageSize:20,//每页加载条数
+        deptCode:"",//机构编码
+        empName:"",//员工姓名
+        empTel:"",//手机、办公电话
+        lists:[],
+        allLoaded:false,
+        flag:-1,//下拉展开详情
+			}
+		},
+		components: {
+			AppHeader
+		},
+		mounted(){
+		  //列表初始化
+      this.initList(this.RowNum,"1");
+    },
+		methods: {
+		  //获取数据
+		  initList(RowNum,updown){
+		    this.dataUrl = this.$route.params;
+        let self = this;
+		    httpGetMethod("hrs-ess/app/getBookInfoList.action?",{
+          RowNum:RowNum,//页码
+          PageSize:self.PageSize,//每页加载条数
+          deptCode: (self.dataUrl.deptCode === "&nbsp;" ? "" : self.dataUrl.deptCode),//机构编码
+          empName: (self.dataUrl.empName === "&nbsp;" ? "" : self.dataUrl.empName),//员工姓名
+          empTel: (self.dataUrl.empTel === "&nbsp;" ? "" : self.dataUrl.empTel),//手机、办公电话
+        },function(result){
+          if(result.success){
+            if(result.msg == "0") {
+              self.$toast({
+                message: '暂无数据！',
+                position: 'middle',
+                duration: 500
+              });
+              return;
+            }
+            self.lists = self.lists.concat(result.data);
+            if(updown=="1") {
+              self.$refs.loadmore.onTopLoaded();
+            }else{
+              self.$refs.loadmore.onBottomLoaded();
+            }
+            if(self.lists.length == result.msg) {
+              self.allLoaded = true;//数据已全部获取完毕
+            }
+          }else{
+            if(result.msg == "0") {
+              self.$toast({
+                message: '暂无数据！',
+                position: 'middle',
+                duration: 500
+              });
+              return;
+            }
+          }
+        });
+		  },
+		  //展开、收起
+		  updown(idx) {
+        this.flag = (this.flag != idx) ? idx : -1;
+      },
+      //拨号
+      phoneCall(tel) {
+        window.location.href = 'tel:' + tel;
+      },
+      //下拉刷新
+      loadTop() {
+        this.allLoaded = false;
+        this.RowNum = 0;
+        this.lists=[];
+        this.initList(this.RowNum,"1");
+      },
+      //上拉加载
+      loadBottom() {
+        if(!this.allLoaded){
+          this.RowNum++;
+          this.initList(this.RowNum,"2");
+        }
+      },
+      //返回搜索页
+      backsearch() {
+        window.history.go(-1);
+      }
+		}
+	}
+</script>
+<style type="text/css">
+	.txlxq-main{
+    font-size: 16px;
+    color: #505050;
+	}
+	ul.txl-uls{
+	  margin: 0;
+    padding: 0;
+	  text-align: left;
+	  list-style: none;
+	}
+	.txl-uls .txl-lis{
+	  line-height: 20px;
+	  border-bottom: 1px solid #f1f1f1;
+	}
+	.txl-headers{
+	  padding: 20px 15px;
+	  display: -webkit-box;
+	  height: 20px;
+    background: #fff;
+  }
+  .txl-contents{
+    padding: 10px 15px;
+    font-size: 12px;
+    background: #fafcff;
+  }
+	.txl-linumber{
+    width: 30px;
+    color: #3d74d9;
+	}
+	.txl-liname{
+    width: 60px;
+  }
+  .txl-licompany{
+    -webkit-box-flex: 1;
+    font-size: 14px;
+    color: #b8b8b8;
+  }
+  .txl-main .fa-angle-up,.txl-main .fa-angle-down{
+    font-size: 20px;
+  }
+  .txl-search{
+    font-size: 16px;
+    padding: 4px;
+  }
+  .txl-contents>div{
+    display: -webkit-box;
+    margin-left: 30px;
+  }
+  .txl-contents>div>div:nth-child(1){
+    width: 5em;
+    color: #b8b8b8;
+  }
+  .txl-contents>div>div:nth-child(2){
+    -webkit-box-flex: 1;
+    color: #585a5b;
+  }
+  .txl-contents>div>div:nth-child(2) a{
+    text-decoration: none;
+    color: #3d74d9;
+  }
+</style>

@@ -1,0 +1,496 @@
+<template>
+
+  <div>
+    <app-header title="新建报销单"></app-header>
+
+    <div class="xjbxd-main">
+
+      <!--基本信息-->
+      <div class="xjbxd-jbxx">
+        <span>基本信息</span>
+      </div>
+      <mt-field label="单据类型：" placeholder="暂无" v-model="type" readonly disabled></mt-field>
+      <mt-field label="申请日期：" placeholder="请输入申请日期" :value="date | formatDate" readonly disabled></mt-field>
+      <mt-field label="报销人：" placeholder="暂无" v-model="info.empName" readonly disabled></mt-field>
+      <mt-field label="费用部门：" placeholder="暂无" v-model="info.orgName" readonly disabled></mt-field>
+      <mt-field label="成本中心：" placeholder="暂无" v-model="info.costCentSname" readonly disabled></mt-field>
+      <mt-field label="发票数量：" placeholder="只能填写大于0的数字" type="number" v-model="billNumber" readonly disabled></mt-field>
+      <mt-field label="申请事由：" placeholder="请填写" v-model="remark"></mt-field>
+
+      <!--发票信息-->
+      <div class="xjbxd-jbxx">
+        <span>发票信息</span>
+      </div>
+      <div class="xjbxd-fpxx" v-for="(item,index) in invoiceList">
+        <div class="xjbxd-fpxx-header">
+          <li>发票序号<span>{{index+1}}</span></li>
+          <li class="fa fa-trash-o" @click="deleteInvoice(index)"></li>
+          <div class="clear"></div>
+        </div>
+        <div class="xjbxd-fpxx-list">
+
+          <a class="mint-cell mint-field">
+            <div class="mint-cell-wrapper">
+              <div class="mint-cell-title">
+                <span class="mint-cell-text">费用项目：</span>
+              </div>
+              <div>
+                <input placeholder="请选择费用项目" type="text" class="mint-field-core" readonly="readonly" v-model="item.expTypeName">
+                <!--<div class="mint-field-other">-->
+                  <!--<span class="fa fa-angle-down"></span>-->
+                <!--</div>-->
+              </div>
+            </div>
+          </a>
+          <mt-field label="发票金额：" placeholder="只能填写大于0的数字" type="number" v-model="item.billAmount"></mt-field>
+          <div class="xjbxd-item" @click="TimeOpen">
+            <mt-field readonly disabled label="发票日期：" placeholder="请选择" :value="item.happenDate | formatDate">
+              <span class="xjbxd-date"></span>
+            </mt-field>
+          </div>
+        </div>
+        <div class="clear"></div>
+      </div>
+      <!--增加发票按钮-->
+      <div class="xjbxd-zjfp" @click="addInvoice">
+        +增加发票
+      </div>
+
+      <!--发表照片-->
+      <div class="xjbxd-jbxx">
+        <span>发表照片</span>
+      </div>
+      <div class="tjbxd-photo">
+        <div class="tjbxd-tjzp" v-for="(item,index) in photo">
+          <img v-bind:src="item.src" alt="">
+          <span @click="clear">×</span>
+        </div>
+        <div class="tjbxd-tjzp" @click="insert">
+          <img src="../assets/insert.png" alt="">
+        </div>
+      </div>
+
+      <div class="xjbxd-button">
+        <mt-button class="button" type="primary" size="large" @click="submit">提 交</mt-button>
+      </div>
+
+
+      <mt-datetime-picker ref="pickerTime" type="date" :startDate="startTime" :endDate="endTime" v-model="pickerTime">
+      </mt-datetime-picker>
+
+
+
+      <mt-popup
+        v-model="bxsqVisible"
+        position="bottom" class="bxsqVisible">
+        <div class="bxsqVisible-top">
+          <span>基本信息</span>
+        </div>
+        <mt-field label="报销单编号：" placeholder="暂无" v-model="information.billCode" readonly disabled></mt-field>
+        <mt-field label="收款人：" placeholder="暂无"  v-model="information.accountName" readonly disabled></mt-field>
+        <mt-field label="员工编号：" placeholder="暂无" v-model="information.payeeId" readonly disabled></mt-field>
+        <mt-field label="身份证号：" placeholder="暂无" v-model="information.idCard" readonly disabled></mt-field>
+        <mt-field label="收款账号：" placeholder="暂无" v-model="information.bankAccount" readonly disabled></mt-field>
+        <mt-field label="收款行名称：" placeholder="暂无" v-model="information.bankName" readonly disabled></mt-field>
+        <mt-field label="收款方行号：" placeholder="暂无" v-model="information.bankKey" readonly disabled></mt-field>
+        <div class="xjbxd-button">
+          <mt-button class="button" type="primary" size="large" @click="ensuerInformation">确 定</mt-button>
+        </div>
+      </mt-popup>
+    </div>
+  </div>
+</template>
+
+<script>
+  import AppHeader from "@/components/HeaderComponent";
+  import { DatetimePicker } from 'mint-ui';
+  import { httpGetBxxx } from "../utils/api.js"; //添加公共组件
+  import { httpGetTjxx } from "../utils/api.js"; //添加公共组件
+  import { Tool } from "../utils/tool.js";
+  export default {
+    name: 'XjbxdComponent',
+    data: function() {
+      return {
+        name:'费用项目：',
+        expenseVisible:false,
+        bxsqVisible: false,
+        expenses:'',
+        expense:'',
+        pickerTime:'',
+        billNumber:'1',
+        remark:'',
+        information:{
+
+        },
+        startTime: new Date("2007-01-01"),
+        endTime: new Date(),
+        type:'其他费用报销',
+        date: new Date(),
+        info :{
+
+        },
+        photo : [
+          {
+            id:'1',
+            src:'../../static/grxx.png'
+          }
+        ],
+        invoiceList:[
+          {
+            'assists': [
+              {
+                'assiObjCode': '001',
+                'assiObjName': '成本中心',
+                'assiObjValue': '8SO1303001',
+                'assiObjValueDesc': '报销核算运营部',
+                'del': '0'
+              }
+            ],
+            'bcurrcyAmount': '100.00',
+            'rate': '1.00000',
+            'billAmount': '',
+            'currentPayAmount': 0,
+            'isDeduction': '0',
+            'expTypeName': '近途交通费',
+            'expTypeCode': '001001002',
+            'expTypeFouth': '6055C84E79B711E7A88F00155D6D1F01',
+            'expTypeFouthName': '退改签车票',
+            'invoiceCurrcyName': '人民币',
+            'invoiceCurrcyId': 'RMB',
+            'happenDate': new Date(),
+            'taxtpName': '',
+            'taxtpCode': null,
+            'suppName': '',
+            'suppCode': null,
+            'remark': '',
+            'costObjCode': null,
+            'costObjName': '',
+            'costObjValue': '',
+            'costObjDesc': '',
+            'taxtpAmount': '0.00',
+            'ftaxtAmount': '0.00',
+            'invoiceCode': '',
+            'expControlType': '',
+            'suppFlag': '',
+            'isSingle': '1',
+            'bankAccount': '',
+            'bankKey': '',
+            'orderNo': '1',
+            'invoiceMark': '',
+            'originalTaxAmount': '0.00',
+            'expenseOnceSupp': {
+
+            }
+          }
+        ]
+      }
+    },
+    components: {
+      AppHeader
+    },
+    methods: {
+      insert : function () {
+
+      },
+      clear : function () {
+        this.photo = [];
+      },
+      TimeOpen: function () {
+        this.$refs.pickerTime.open();
+      },
+      addInvoice : function () {
+        this.invoiceList.push( {
+          'assists': [
+            {
+              'assiObjCode': '001',
+              'assiObjName': '成本中心',
+              'assiObjValue': '8SO1303001',
+              'assiObjValueDesc': '报销核算运营部',
+              'del': '0'
+            }
+          ],
+          'bcurrcyAmount': '100.00',
+          'rate': '1.00000',
+          'billAmount': '',
+          'currentPayAmount': 0,
+          'isDeduction': '0',
+          'expTypeName': '近途交通费',
+          'expTypeCode': '001001002',
+          'expTypeFouth': '6055C84E79B711E7A88F00155D6D1F01',
+          'expTypeFouthName': '退改签车票',
+          'invoiceCurrcyName': '人民币',
+          'invoiceCurrcyId': 'RMB',
+          'happenDate': '',
+          'taxtpName': '',
+          'taxtpCode': null,
+          'suppName': '',
+          'suppCode': null,
+          'remark': '',
+          'costObjCode': null,
+          'costObjName': '',
+          'costObjValue': '',
+          'costObjDesc': '',
+          'taxtpAmount': '0.00',
+          'ftaxtAmount': '0.00',
+          'invoiceCode': '',
+          'expControlType': '',
+          'suppFlag': '',
+          'isSingle': '1',
+          'bankAccount': '',
+          'bankKey': '',
+          'orderNo': '1',
+          'invoiceMark': '',
+          'originalTaxAmount': '0.00',
+          'expenseOnceSupp': {
+
+          }
+        })
+        this.billNumber = this.invoiceList.length;
+      },
+      deleteInvoice : function (id) {
+        this.remove(this.invoiceList,this.invoiceList[id]);
+        this.fpnum = this.invoiceList.length;
+      },
+      remove: function (arr,item) {
+        if(arr.length){
+          var index = arr.indexOf(item);
+          if(index>-1){
+            return arr.splice(index,1)
+          }
+        }
+      },
+      ensuerInformation : function () {
+        this.bxsqVisible = false;
+      },
+      submit: function () {
+        let self = this;
+        httpGetTjxx("fss/otherBillPubAction_addRmaOtherBill.action?", {
+          saveOrSubmit :'1',                    // 0  保存 1 提交
+          'rmaOtherBill.payModeName':'银企直连',
+          'rmaOtherBill.payModeCode':'003',
+          "rmaOtherBill.billCode" : '系统自动生成',          //报销单编号
+          "rmaOtherBill.creater" : '刘鹏',             //创建人
+          "rmaOtherBill.remark" : self.remark,              //申请事由
+          "rmaOtherBill.billNumber": self.billNumber,            //票据张数
+          "rmaOtherBill.applyEmpId": '00617301',           //申请人id
+          "rmaOtherBill.applyEmpName": '刘鹏',         //申请人名称
+          "rmaOtherBill.applyOrgId": '20021007',           //员工的组织ID
+          "rmaOtherBill.applyOrgCode": '20021007',           //员工的组织code
+          "rmaOtherBill.applyorgsfname": '报销核算运营部',         // 员工的组织名称
+          "rmaOtherBill.applyDeptOrgCode": '20021007',       //人员所属部门编码
+          "rmaOtherBill.applyDeptOrgSfname": '报销核算运营部',       //人员所属部门名称
+          "rmaOtherBill.apprOrgId": '20021007',                //审批组织机构ID
+          "rmaOtherBill.apprOrgCode": '20021007',              //审批组织机构编码
+          "rmaOtherBill.approrgsfname": '报销核算运营部',            //审批组织机构名称
+          "rmaOtherBill.currcyId":'RMB',
+          "rmaOtherBill.currcyCode":'RMB',
+          "rmaOtherBill.currcyName":'人民币',
+          "rmaOtherBill.rate":'0.00',
+          "rmaOtherBill.costCentCode":self.info.costCentCode,                //成本中心编码
+          "rmaOtherBill.compCode": '1180',                     //公司编码
+          "rmaOtherBill.bcurrcyId":'RMB',                        //人民币
+          "rmaOtherBill.bcurrcyAmount":'100.00',                   //本位币金额
+          "rmaOtherBill.bcurrcyCode":'RMB',                     //本位币币种
+          "rmaOtherBill.billAmount":'100.00',                       //报销金额
+          "rmaOtherBill.accoObjCode":'',                       // 审批维度
+          "rmaOtherBill.accoObjName":'',
+          "rmaOtherBill.accoObjValue":'',
+          "rmaOtherBill.accoObjValueDesc":'',
+          "rmaOtherBill.expTypeCode1":'',            // 一级费用类型编码
+          "rmaOtherBill.expTypeName1":'',              // 一级费用类型类型
+          "rmaOtherBill.expTypeCode2":'',             // 二级费用类型编码
+          "rmaOtherBill.expTypeName2":'',            // 二级费用类型名称
+          rmaOtherBillPayOffsJson:'[]',
+          rmaOtherBillApplyJson:'[]',
+          rmaOtherBillLoadJson:'[]',
+          "rmaOtherBill.pubApplyNos":'',
+          rmaOtherBillExpensesJson:self.invoiceList
+
+        }, function(result) {
+          console.log(result);
+        })
+//        this.bxsqVisible = true;
+      },
+    },
+    filters: {
+      formatDate(time) {
+        let date = new Date(time);
+        return Tool.formate(date, 'yyyy-MM-dd')
+      }
+    },
+    mounted:function () {
+      let self = this;
+      httpGetBxxx("fss/travelApplyUserSessionAction_queryUsersInfo.action?", {
+        empId : "00617301"
+      }, function(result) {
+        console.log(result)
+        self.info = result;
+      })
+    }
+  }
+</script>
+<style type="text/css">
+
+  .xjbxd-button .button{
+    background-color: #3a71dc !important;
+  }
+
+  .clear {
+    clear: both;
+  }
+
+  .xjbxd-main {
+    font-family: "微软雅黑";
+    width: 100%;
+    text-align: left;
+    font-size: 14px;
+    margin-bottom: 40px;
+  }
+
+  .xjbxd-main .mint-cell-wrapper {
+    font-size: 14px;
+  }
+
+  .xjbxd-jbxx {
+    height: 40px;
+    line-height: 40px;
+    color: #8c8c8c;
+  }
+
+  .xjbxd-jbxx span{
+    display: inline-block;
+    margin-left: 10px;
+  }
+
+  .xjbxd-fpxx{
+    background: white;
+  }
+
+  .xjbxd-fpxx-header{
+    width: 100%;
+    height: 48px;
+    background: white;
+    line-height: 48px;
+  }
+
+  .xjbxd-fpxx-header li:nth-child(1){
+    float: left;
+    margin-left: 10px;
+  }
+
+  .xjbxd-fpxx-header li:nth-child(2){
+    float: right;
+    margin-right: 15px;
+    line-height: 48px;
+  }
+
+  .xjbxd-fpxx-list{
+    width: 90%;
+    float: right;
+  }
+
+  .xjbxd-zjfp{
+    width: 100%;
+    height: 48px;
+    line-height: 48px;
+    text-align: center;
+    background: white;
+    font-size: 16px;
+    color: #6f97e5;
+  }
+
+  .xjbxd-date{
+    background: url(../../static/time.png) no-repeat center;
+    background-size: contain;
+    display: block;
+    width: 15px;
+    height: 15px;
+  }
+
+  .xjbxd-item .mint-cell-wrapper {
+    text-align: left;
+  }
+
+  input:disabled{
+    background:#fff;
+    color: black;
+  }
+
+  .xjbxd-fpxx .mint-cell-wrapper {
+    padding: 0 15px;
+  }
+
+  .xjbxd-button {
+    width: 100%;
+    height: 40px;
+    position: fixed;
+    left: 0;
+    bottom: 0;
+  }
+
+  .xjbxd-button .mint-button {
+    border-radius: 0;
+  }
+
+  .xjbxd-expense {
+    width: 100%;
+  }
+
+  .tjbxd-photo {
+    width: 100%;
+    height: 80px;
+    background: white;
+  }
+
+  .tjbxd-tjzp {
+    width: 50px;
+    height: 50px;
+    margin-top: 15px;
+    margin-left: 10px;
+    float: left;
+    position: relative;
+  }
+
+  .tjbxd-tjzp span {
+    position: absolute;
+    top: -10px;
+    right: -5px;
+    background: #f7525f;
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    text-align: center;
+    line-height: 20px;
+    border-radius: 50%;
+    color: white;
+  }
+
+  .tjbxd-tjzp img {
+    width: 50px;
+    height: 50px;
+  }
+
+  .xjbxd-wrapper{
+    height: auto;
+    width: 100%;
+    background: #fff;
+  }
+
+  .xjbxd-wrapper .mint-button--normal {
+    float: left;
+    width: 50%;
+  }
+
+  .bxsqVisible {
+    width: 100%;
+  }
+
+  .bxsqVisible-top {
+    width: 100%;
+    height: 40px;
+    line-height: 40px;
+    text-align: center;
+    font-size: 16px;
+    color: #2982d5;
+  }
+</style>

@@ -1,0 +1,486 @@
+<template>
+
+  <div>
+    <app-header title="报销详情"></app-header>
+
+    <div class="bxxq-main" :style="pageh">
+      <div>
+        <div class="xjbxd-bxxq">
+          <span>基本信息</span>
+        </div>
+
+        <div class="mint-cell mint-field">
+          <div class="mint-cell-wrapper">
+            <div class="mint-cell-title">
+              <span class="mint-cell-text">单据类型：</span>
+            </div>
+            <div class="xjbxd-input">
+              <input placeholder="暂无" type="text" class="mint-field-core" readonly="readonly" v-model="information.billTypeName">
+            </div>
+          </div>
+        </div>
+
+        <div class="mint-cell mint-field">
+          <div class="mint-cell-wrapper">
+            <div class="mint-cell-title">
+              <span class="mint-cell-text">申请人：</span>
+            </div>
+            <div class="xjbxd-input">
+              <input placeholder="暂无" type="text" class="mint-field-core" readonly="readonly" v-model="information.applyEmpName">
+            </div>
+          </div>
+        </div>
+
+        <div class="mint-cell mint-field">
+          <div class="mint-cell-wrapper">
+            <div class="mint-cell-title">
+              <span class="mint-cell-text">报销人：</span>
+            </div>
+            <div class="xjbxd-input">
+              <input placeholder="暂无" type="text" class="mint-field-core" readonly="readonly" v-model="information.forReimbursementName">
+            </div>
+          </div>
+        </div>
+
+        <div class="mint-cell mint-field">
+          <div class="mint-cell-wrapper">
+            <div class="mint-cell-title">
+              <span class="mint-cell-text">申请日期：</span>
+            </div>
+            <div class="xjbxd-input">
+              <input placeholder="暂无" type="text" class="mint-field-core" readonly="readonly" v-model="information.applyDate">
+            </div>
+          </div>
+        </div>
+
+        <div class="mint-cell mint-field">
+          <div class="mint-cell-wrapper">
+            <div class="mint-cell-title">
+              <span class="mint-cell-text">费用部门：</span>
+            </div>
+            <div class="xjbxd-input">
+              <input placeholder="暂无" type="text" class="mint-field-core" readonly="readonly" v-model="information.approrgsfname">
+            </div>
+          </div>
+        </div>
+
+        <div class="mint-cell mint-field">
+          <div class="mint-cell-wrapper">
+            <div class="mint-cell-title">
+              <span class="mint-cell-text">成本中心：</span>
+            </div>
+            <div class="xjbxd-input">
+              <input placeholder="暂无" type="text" class="mint-field-core" readonly="readonly" v-model="information.costCentSname">
+            </div>
+          </div>
+        </div>
+
+        <div class="mint-cell mint-field">
+          <div class="mint-cell-wrapper">
+            <div class="mint-cell-title">
+              <span class="mint-cell-text">业务种类：</span>
+            </div>
+            <div class="xjbxd-input">
+              <input placeholder="暂无" type="text" class="mint-field-core" readonly="readonly" v-model="information.businessName">
+            </div>
+          </div>
+        </div>
+
+        <div class="mint-cell mint-field">
+          <div class="mint-cell-wrapper">
+            <div class="mint-cell-title">
+              <span class="mint-cell-text">申请事由：</span>
+            </div>
+            <div class="xjbxd-input">
+              <input placeholder="暂无" type="text" class="mint-field-core" readonly="readonly" v-model="information.remark">
+            </div>
+          </div>
+        </div>
+
+        <!--<mt-field label="单据类型：" placeholder="暂无" v-model="information.billTypeName" readonly disabled></mt-field>-->
+        <!--<mt-field label="申请人：" placeholder="暂无" v-model="information.applyEmpName" readonly disabled></mt-field>-->
+        <!--<mt-field label="报销人：" placeholder="暂无" v-model="information.forReimbursementName" readonly disabled></mt-field>-->
+        <!--<mt-field label="申请日期：" placeholder="暂无" v-model="information.applyDate" readonly disabled></mt-field>-->
+        <!--<mt-field label="费用部门：" placeholder="暂无" v-model="information.approrgsfname" readonly disabled></mt-field>-->
+        <!--<mt-field label="成本中心：" placeholder="暂无" v-model="information.costCentSname" readonly disabled></mt-field>-->
+        <!--<mt-field label="业务种类：" placeholder="暂无" v-model="information.businessName" readonly disabled></mt-field>-->
+        <!--<mt-field label="申请事由：" placeholder="暂无" v-model="information.remark" readonly disabled></mt-field>-->
+      </div>
+
+      <div>
+        <div class="xjbxd-bxxq">
+          <span>费用信息</span>
+        </div>
+        <div class="bxxq-approve-table" v-for="table in tables">
+          <div class="body" >
+            <!--服务跟踪-->
+            <div v-if='table.columns=="3"' class="approve-table-two approve-table-five" v-show="table.expend">
+              <div :class="tri==table.tr.length-1?'row tr-last':'row tr'" v-for="(tr,tri) in table.tr">
+                <div class="col-010">
+                  <span v-if="tri == 0">序号</span>
+                  <span v-if="tri != 0">{{tri}}</span>
+                </div>
+                <div class="col-010">
+                  <span>{{tr.expTypeName}}</span>
+                </div>
+                <div class="col-010">
+                  <span>{{tr.expTypeFouthName}}</span>
+                </div>
+                <div class="col-010">
+                  <span>{{tr.billAmount}}</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="xjbxd-bxxq">
+          <span>支付信息</span>
+        </div>
+        <div class="mint-cell mint-field">
+          <div class="mint-cell-wrapper">
+            <div class="mint-cell-title">
+              <span class="mint-cell-text">收款人：</span>
+            </div>
+            <div class="xjbxd-input">
+              <input placeholder="暂无" type="text" class="mint-field-core" readonly="readonly" v-model="payOffs.accountName">
+            </div>
+          </div>
+        </div>
+
+        <div class="mint-cell mint-field">
+          <div class="mint-cell-wrapper">
+            <div class="mint-cell-title">
+              <span class="mint-cell-text">员工编号：</span>
+            </div>
+            <div class="xjbxd-input">
+              <input placeholder="暂无" type="text" class="mint-field-core" readonly="readonly" v-model="payOffs.payeeId">
+            </div>
+          </div>
+        </div>
+
+        <div class="mint-cell mint-field">
+          <div class="mint-cell-wrapper">
+            <div class="mint-cell-title">
+              <span class="mint-cell-text">身份证号：</span>
+            </div>
+            <div class="xjbxd-input">
+              <input placeholder="暂无" type="text" class="mint-field-core" readonly="readonly" v-model="payOffs.idCard">
+            </div>
+          </div>
+        </div>
+
+        <div class="mint-cell mint-field">
+          <div class="mint-cell-wrapper">
+            <div class="mint-cell-title">
+              <span class="mint-cell-text">收款账号：</span>
+            </div>
+            <div class="xjbxd-input">
+              <input placeholder="暂无" type="text" class="mint-field-core" readonly="readonly" v-model="payOffs.bankAccount">
+            </div>
+          </div>
+        </div>
+
+        <div class="mint-cell mint-field">
+          <div class="mint-cell-wrapper">
+            <div class="mint-cell-title">
+              <span class="mint-cell-text">收款行名称：</span>
+            </div>
+            <div class="xjbxd-input">
+              <input placeholder="暂无" type="text" class="mint-field-core" readonly="readonly" v-model="payOffs.bankName">
+            </div>
+          </div>
+        </div>
+
+        <!--<mt-field label="收款人：" placeholder="暂无" v-model="payOffs.accountName" readonly disabled></mt-field>-->
+        <!--<mt-field label="员工编号：" placeholder="暂无" readonly disabled v-model="payOffs.payeeId"></mt-field>-->
+        <!--<mt-field label="身份证号：" placeholder="暂无" readonly disabled v-model="payOffs.idCard"></mt-field>-->
+        <!--<mt-field label="收款账号：" placeholder="暂无" readonly disabled v-model="payOffs.bankAccount"></mt-field>-->
+        <!--<mt-field label="收款行名称：" placeholder="暂无" readonly disabled v-model="payOffs.bankName" class="payOffs"></mt-field>-->
+        <!---->
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+  import AppHeader from "@/components/HeaderComponent";
+  import { DatetimePicker } from 'mint-ui';
+  import { Tool } from "../utils/tool.js";
+  import { State } from "../utils/api.js";
+  import { httpGetBxxx } from "../utils/api.js"; //添加公共组件
+  export default {
+    name: 'BxxqComponent',
+    data: function() {
+      return {
+        pageh: {
+          height: 0
+        },
+        name:'费用项目：',
+        expenseVisible:false,
+        pickerTime:'',
+        startTime: new Date("2013-01-01"),
+        endTime: new Date(),
+        type:'',
+        information:{},
+        payOffs:{},
+        expense:{
+          expTypeName:'费用项目',
+          expTypeFouthName:'四级费用',
+          billAmount:'发票总金额'
+        },
+        slots: [
+          {
+            flex: 1,
+            values: [],
+            className: 'slot1',
+            textAlign: 'left'
+          }
+        ],
+        invoice:[
+          {
+
+          }
+        ],
+        tables: [{
+          "title": "文本描述",
+          "editfield": "false",
+          "columns": "3",
+          "expend": "true",
+          "id": "1f88708e-4693-4670-93a9-40e56a4ad780",
+          "tr": [
+
+          ]
+        }
+        ]
+      }
+    },
+    components: {
+      AppHeader
+    },
+    methods: {
+      nextStep: function () {
+        this.$router.push('/tjbxd');
+      },
+      TimeOpen: function () {
+        this.$refs.pickerTime.open();
+      },
+      expenseShow: function () {
+        this.expenseVisible = true;
+      }
+    },
+    filters: {
+      formatDate(time) {
+        let date = new Date(time);
+        return Tool.formate(date, 'yyyy-MM-dd')
+      }
+    },
+    mounted: function () {
+      let self = this;
+      let billCode = this.$route.params.billCode;
+      httpGetBxxx("fss/otherBillPubAction_viewOtherBill.action?", {
+        "rmaOtherBill.billCode" : billCode
+      }, function(result) {
+        self.information = result.rmaOtherBill;
+        self.information.applyDate = result.rmaOtherBill.applyDate.substring(0,4) + '年' + result.rmaOtherBill.applyDate.substring(4,6) + '月' + result.rmaOtherBill.applyDate.substring(6,8) + '日';
+        self.payOffs = result.rmaOtherBill.payOffs[0];
+
+        self.tables[0].tr = result.rmaOtherBill.expenses;
+        self.tables[0].tr.unshift(self.expense);
+      })
+    }
+  }
+</script>
+<style type="text/css">
+  .bxxq-main {
+    font-family: "微软雅黑";
+    width: 100%;
+    text-align: left;
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+
+  input:disabled{
+    background:#fff!important;
+  }
+
+  .xjbxd-input {
+    width: 100%;
+  }
+
+  .xjbxd-main .mint-cell-wrapper {
+    font-size: 14px;
+  }
+
+  .xjbxd-bxxq {
+    width: 100%;
+    height: 40px;
+    line-height: 40px;
+  }
+
+  .xjbxd-bxxq span{
+    margin-left: 10px;
+    color: #2982d5;
+  }
+
+  .bxxq-approve-table {
+    background-color: white;
+    border-top: solid 1px #d8d8d8;
+  }
+
+  .bxxq-approve-table .body a {
+    color: #2982d5;
+    text-decoration: none;
+  }
+
+  .bxxq-approve-table .header {
+    height: 44px;
+    line-height: 44px;
+    margin-left: 10px;
+    margin-right: 10px;
+    color: #2982d5;
+    font-size: 16px;
+    background-color: #fff !important;
+    border-bottom: solid 1px #d8d8d8;
+  }
+
+  .bxxq-approve-table .header-unBottonLine {
+    height: 44px;
+    line-height: 44px;
+    margin-left: 10px;
+    margin-right: 10px;
+    color: #2982d5;
+    font-size: 16px;
+  }
+
+  .bxxq-approve-table .body {
+    border-bottom: solid 1px #d8d8d8;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  /*左右两列样式*/
+
+  .approve-table-two .tr {
+    /*margin-top: 7px;*/
+    /*margin-bottom: 7px;*/
+    padding: 7px 0;
+    border-bottom: 1px dotted #D8D8D8;
+  }
+
+  .approve-table-two .tr-last {
+    padding: 7px 0;
+  }
+
+  .approve-table-two .tr .first {
+    color: #777;
+  }
+
+  .approve-table-two .tr .notFirst {
+    color: #000;
+  }
+
+  .approve-table-two .tr-last .first {
+    color: #777;
+  }
+
+  .approve-table-two .tr-last .notFirst {
+    color: #000;
+  }
+  /*多列时以table方式展示*/
+
+  .approve-table-multiple {
+    width: 100%;
+    margin-top: 7px;
+    margin-bottom: 7px;
+  }
+  .approve-table-five{
+    text-align: center;
+  }
+
+  .approve-table-five>div:nth-child(1) {
+    font-weight: bold;
+  }
+
+  .approve-table-five>div:nth-child(odd) {
+    background: #f7f7f7;
+  }
+
+  .approve-table-multiple .th {
+    color: #777;
+    border: 1px solid #ccc;
+  }
+
+  .approve-table-multiple .tr {
+    color: #000;
+    border: 1px solid #ccc;
+  }
+
+  .approve-table-multiple .td {
+    padding: 5px;
+    border: 1px solid #ccc;
+  }
+
+  .approve-table-multiple .td .cell-width {
+    width: 150px;
+  }
+
+  .approve-table-move {
+    overflow: hidden;
+  }
+
+  .move-table {
+    float: left;
+  }
+
+  .approve-table-move .tr .td {
+    height: 51px;
+    vertical-align: middle;
+  }
+
+  .move-table-right {
+    margin-top: 0;
+  }
+
+  .approve-detail-input[type='text'] {
+    width: 100%;
+    padding: 3px;
+    border: 1px solid #d8d8d8;
+    -webkit-appearance: none;
+    outline: none;
+  }
+  .float-right{
+    float: right;
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
+  .row {
+    display: flex;
+    padding: 5px;
+    width: 100%;
+    align-items: center;
+
+  }
+
+  .col-010{
+    -webkit-box-flex: 0;
+    -webkit-flex: 0 0 25%;
+    -moz-box-flex: 0;
+    -moz-flex: 0 0 25%;
+    -ms-flex: 0 0 25%;
+    flex: 0 0 25%;
+    max-width: 25%;
+  }
+
+  bxxq-main .mint-field-core {
+    color: black;
+  }
+
+  .payOffs .mint-field-core{
+    font-size: 13px!important;
+  }
+
+</style>

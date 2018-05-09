@@ -1,0 +1,369 @@
+<template>
+
+  <div>
+    <app-header title="报销详情"></app-header>
+
+    <div class="bxxq-main" :style="pageh">
+      <div>
+        <div class="xjbxd-bxxq">
+          <span>基本信息</span>
+        </div>
+
+        <div class="mint-cell mint-field" v-for="item in BxxqList">
+          <div class="mint-cell-wrapper">
+            <div class="mint-cell-title">
+              <span class="mint-cell-text">{{item.title}}</span>
+            </div>
+            <div class="xjbxd-input">
+              <input placeholder="暂无" type="text" class="mint-field-core" readonly="readonly" v-model="item.model">
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div>
+        <div class="xjbxd-bxxq">
+          <span>费用信息</span>
+        </div>
+        <div class="bxxq-approve-table" v-for="table in tables">
+          <div class="body" >
+            <!--服务跟踪-->
+            <div v-if='table.columns=="3"' class="approve-table-two approve-table-five">
+              <div :class="tri==table.tr.length-1?'row tr-last':'row tr'" v-for="(tr,tri) in table.tr">
+                <div class="col-010">
+                  <span v-if="tri == 0">序号</span>
+                  <span v-if="tri != 0">{{tri}}</span>
+                </div>
+                <div class="col-010">
+                  <span>{{tr.expTypeName}}</span>
+                </div>
+                <div class="col-010">
+                  <span>{{tr.expTypeFouthName}}</span>
+                </div>
+                <div class="col-010">
+                  <span>{{tr.billAmount}}</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="xjbxd-bxxq">
+          <span>支付信息</span>
+        </div>
+        <div class="mint-cell mint-field" v-for="item in payList">
+          <div class="mint-cell-wrapper">
+            <div class="mint-cell-title">
+              <span class="mint-cell-text">{{item.title}}</span>
+            </div>
+            <div class="xjbxd-input">
+              <input placeholder="暂无" type="text" class="mint-field-core" readonly="readonly" v-model="item.model">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+  import AppHeader from "@/components/HeaderComponent";
+  import { DatetimePicker } from 'mint-ui';
+  import { Tool } from "../../../utils/tool.js";
+  import { httpGetBxxx,State } from "../../../utils/api.js"; //添加公共组件
+  export default {
+    name: 'BxxqComponent',
+    data: function() {
+      return {
+        pageh: {
+          height: 0
+        },
+        name:'费用项目：',
+        expenseVisible:false,
+        pickerTime:'',
+        startTime: new Date("2013-01-01"),
+        endTime: new Date(),
+        type:'',
+        BxxqList:[
+          {
+            title:"单据类型",
+            model: ''
+          },
+          {
+            title:"申请人",
+            model: ''
+          },
+          {
+            title:"报销人",
+            model: ''
+          },
+          {
+            title:"申请日期",
+            model: ''
+          },
+          {
+            title:"费用部门",
+            model: ''
+          },
+          {
+            title:"成本中心",
+            model: ''
+          },
+          {
+            title:"业务种类",
+            model: ''
+          },
+          {
+            title:"申请事由",
+            model: ''
+          }
+        ],
+        payList:[
+          {
+            title:"收款人",
+            model: ''
+          },
+          {
+            title:"员工编号",
+            model: ''
+          },
+          {
+            title:"身份证号",
+            model: ''
+          },
+          {
+            title:"收款账号",
+            model: ''
+          },
+          {
+            title:"收款行名称",
+            model: ''
+          }
+        ],
+        expense:{
+          expTypeName:'费用项目',
+          expTypeFouthName:'四级费用',
+          billAmount:'发票总金额'
+        },
+        slots: [
+          {
+            flex: 1,
+            values: [],
+            className: 'slot1',
+            textAlign: 'left'
+          }
+        ],
+        invoice:[
+          {
+
+          }
+        ],
+        tables: [{
+          "title": "文本描述",
+          "editfield": "false",
+          "columns": "3",
+          "id": "1f88708e-4693-4670-93a9-40e56a4ad780",
+          "tr": [
+
+          ]
+        }
+        ]
+      }
+    },
+    components: {
+      AppHeader
+    },
+    methods: {
+      nextStep: function () {
+        this.$router.push('/tjbxd');
+      },
+      TimeOpen: function () {
+        this.$refs.pickerTime.open();
+      },
+      expenseShow: function () {
+        this.expenseVisible = true;
+      }
+    },
+    filters: {
+      formatDate(time) {
+        let date = new Date(time);
+        return Tool.formate(date, 'yyyy-MM-dd')
+      }
+    },
+    mounted: function () {
+      let self = this;
+      let billCode = this.$route.params.billCode;
+      httpGetBxxx("fss/otherBillPubAction_viewOtherBill.action?", {
+        "rmaOtherBill.billCode" : billCode
+      }, function(result) {
+
+        //获取基本信息
+        self.BxxqList[0].model = result.rmaOtherBill.billTypeName;
+        self.BxxqList[1].model = result.rmaOtherBill.applyEmpName;
+        self.BxxqList[2].model = result.rmaOtherBill.forReimbursementName;
+        self.BxxqList[3].model = result.rmaOtherBill.applyDate.substring(0,4) + '年' + result.rmaOtherBill.applyDate.substring(4,6) + '月' + result.rmaOtherBill.applyDate.substring(6,8) + '日';
+        self.BxxqList[4].model = result.rmaOtherBill.approrgsfname;
+        self.BxxqList[5].model = result.rmaOtherBill.costCentSname;
+        self.BxxqList[6].model = result.rmaOtherBill.businessName;
+        self.BxxqList[7].model = result.rmaOtherBill.remark;
+
+        //获取支付信息
+        self.payList[0].model = result.rmaOtherBill.payOffs[0].accountName;
+        self.payList[1].model = result.rmaOtherBill.payOffs[0].payeeId;
+        self.payList[2].model = result.rmaOtherBill.payOffs[0].idCard;
+        self.payList[3].model = result.rmaOtherBill.payOffs[0].bankAccount;
+        self.payList[4].model = result.rmaOtherBill.payOffs[0].bankName;
+
+        //获取费用信息
+        self.tables[0].tr = result.rmaOtherBill.expenses;
+        self.tables[0].tr.unshift(self.expense);
+      })
+    }
+  }
+</script>
+<style type="text/css">
+  .bxxq-main {
+    font-family: "微软雅黑";
+    width: 100%;
+    text-align: left;
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+
+  input:disabled{
+    background:#fff!important;
+  }
+
+  .xjbxd-input {
+    width: 100%;
+  }
+
+  .bxxq-main .mint-cell-wrapper {
+    font-size: 14px;
+  }
+
+  .xjbxd-bxxq {
+    width: 100%;
+    height: 40px;
+    line-height: 40px;
+  }
+
+  .xjbxd-bxxq span{
+    margin-left: 10px;
+    color: #2982d5;
+  }
+
+  .bxxq-approve-table {
+    background-color: white;
+    border-top: solid 1px #d8d8d8;
+  }
+
+  .bxxq-approve-table .body a {
+    color: #2982d5;
+    text-decoration: none;
+  }
+
+  .bxxq-approve-table .header {
+    height: 44px;
+    line-height: 44px;
+    margin-left: 10px;
+    margin-right: 10px;
+    color: #2982d5;
+    font-size: 16px;
+    background-color: #fff !important;
+    border-bottom: solid 1px #d8d8d8;
+  }
+
+  .bxxq-approve-table .header-unBottonLine {
+    height: 44px;
+    line-height: 44px;
+    margin-left: 10px;
+    margin-right: 10px;
+    color: #2982d5;
+    font-size: 16px;
+  }
+
+  .bxxq-approve-table .body {
+    border-bottom: solid 1px #d8d8d8;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  /*左右两列样式*/
+
+  .approve-table-two .tr {
+    /*margin-top: 7px;*/
+    /*margin-bottom: 7px;*/
+    padding: 7px 0;
+    border-bottom: 1px dotted #D8D8D8;
+  }
+
+  .approve-table-two .tr-last {
+    padding: 7px 0;
+  }
+
+  .approve-table-two .tr .first {
+    color: #777;
+  }
+
+  .approve-table-two .tr .notFirst {
+    color: #000;
+  }
+
+  .approve-table-two .tr-last .first {
+    color: #777;
+  }
+
+  .approve-table-two .tr-last .notFirst {
+    color: #000;
+  }
+
+  /*多列时以table方式展示*/
+
+  .approve-table-multiple {
+    width: 100%;
+    margin-top: 7px;
+    margin-bottom: 7px;
+  }
+  .approve-table-five{
+    text-align: center;
+  }
+
+  .approve-table-five>div:nth-child(1) {
+    font-weight: bold;
+  }
+
+  .approve-table-five>div:nth-child(odd) {
+    background: #f7f7f7;
+  }
+
+  .row {
+    display: flex;
+    padding: 5px;
+    width: 100%;
+    align-items: center;
+  }
+
+  .col-010{
+    -webkit-box-flex: 0;
+    -webkit-flex: 0 0 25%;
+    -moz-box-flex: 0;
+    -moz-flex: 0 0 25%;
+    -ms-flex: 0 0 25%;
+    flex: 0 0 25%;
+    max-width: 25%;
+  }
+
+  bxxq-main .mint-field-core {
+    color: black;
+  }
+
+  .payOffs .mint-field-core{
+    font-size: 13px!important;
+  }
+
+</style>
